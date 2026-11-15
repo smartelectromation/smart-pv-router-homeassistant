@@ -17,7 +17,7 @@ const ACTIVE_W = 30; // En dessous, pas de flux affiché (comme l'application).
 
 const COLORS = {
   pv: "#F59E0B", grid: "#6366F1", house: "#10B981", ecs: "#EF3E35", ev: "#06B6D4",
-  batt: "#8B5CF6", out2: "#0EA5E9", ok: "#16A34A", muted: "#6B6B6B",
+  batt: "#8B5CF6", out2: "#0EA5E9", ok: "#16A34A", muted: "#6B6B6B", sat: "#E08600",
 };
 
 // Photo selon (batterie, voiture). Même cadrage pour les quatre : une seule géométrie.
@@ -47,7 +47,10 @@ const TEXT = {
     solar: "Solaire", grid: "Réseau", import: "Soutirage", export: "Injection", house: "Maison",
     water_heater: "Chauffe-eau", hot: "Chaud", output_2: "Sortie 2", output_1: "Sortie 1",
     stopped: "Arrêt", waiting: "Attente", battery: "Batterie", standby: "Veille", car: "Voiture",
-    charger: "Borne", no_car: "Pas de charge",
+    charger: "Borne", no_car: "Pas de charge", st_on: "Marche", st_sat: "Saturée", pick_type: "Choisir la charge de la Sortie 2",
+    types: { other: "Sortie 2", radiator: "Radiateur", pool: "Piscine", hot_tub: "Spa / jacuzzi",
+      ev: "Voiture (Green'Up)", heat_pump: "Pompe à chaleur", water_heater: "Chauffe-eau 2",
+      air_conditioner: "Climatisation", socket: "Prise" },
     boost: "Boost", boost_rem: "Boost · {n} min", boost_on: "Boost en cours", boost_off: "Boost",
     duration: "Durée", min: "min", start: "Lancer", stop: "Arrêter", ecomax: "EcoMax",
     night: "Nuit", not_found: "Aucun Smart PV-Router trouvé.", today: "Aujourd'hui",
@@ -62,7 +65,10 @@ const TEXT = {
     solar: "Solar", grid: "Grid", import: "Import", export: "Export", house: "House",
     water_heater: "Water heater", hot: "Hot", output_2: "Output 2", output_1: "Output 1",
     stopped: "Off", waiting: "Waiting", battery: "Battery", standby: "Standby", car: "Car",
-    charger: "Charger", no_car: "Not charging",
+    charger: "Charger", no_car: "Not charging", st_on: "On", st_sat: "Saturated", pick_type: "Choose the Output 2 load",
+    types: { other: "Output 2", radiator: "Radiator", pool: "Pool", hot_tub: "Hot tub",
+      ev: "Car (Green'Up)", heat_pump: "Heat pump", water_heater: "Water heater 2",
+      air_conditioner: "Air conditioning", socket: "Socket" },
     boost: "Boost", boost_rem: "Boost · {n} min", boost_on: "Boost running", boost_off: "Boost",
     duration: "Duration", min: "min", start: "Start", stop: "Stop", ecomax: "EcoMax",
     night: "Night", not_found: "No Smart PV-Router found.", today: "Today",
@@ -77,7 +83,10 @@ const TEXT = {
     solar: "Solar", grid: "Netz", import: "Bezug", export: "Einspeisung", house: "Haus",
     water_heater: "Warmwasser", hot: "Heiß", output_2: "Ausgang 2", output_1: "Ausgang 1",
     stopped: "Aus", waiting: "Wartet", battery: "Batterie", standby: "Standby", car: "Auto",
-    charger: "Wallbox", no_car: "Lädt nicht",
+    charger: "Wallbox", no_car: "Lädt nicht", st_on: "Ein", st_sat: "Gesättigt", pick_type: "Verbraucher an Ausgang 2 wählen",
+    types: { other: "Ausgang 2", radiator: "Heizkörper", pool: "Pool", hot_tub: "Whirlpool",
+      ev: "Auto (Green'Up)", heat_pump: "Wärmepumpe", water_heater: "Warmwasser 2",
+      air_conditioner: "Klimaanlage", socket: "Steckdose" },
     boost: "Boost", boost_rem: "Boost · {n} min", boost_on: "Boost läuft", boost_off: "Boost",
     duration: "Dauer", min: "min", start: "Starten", stop: "Stoppen", ecomax: "EcoMax",
     night: "Nacht", not_found: "Kein Smart PV-Router gefunden.", today: "Heute",
@@ -90,12 +99,12 @@ const TEXT = {
   },
 };
 
-const DEFAULT_OUT2_ICON = "mdi:radiator";
+const DEFAULT_OUT2_ICON = "mdi:flash";
 
 // Clés de /getjson (ou de commande) dont la carte lit l'entité.
 const KEYS = [
   "PIN", "PROD", "POUT", "POUT1", "POUT2", "HOUSE", "BATT", "EVPOWER", "LOAD2", "TEMP1",
-  "BOOSTREM", "GRID_ERR", "STATUS_OUT2", "LOAD1_SATURED", "NIGHT", "Out1_mode", "Out2_mode",
+  "BOOSTREM", "GRID_ERR", "STATUS_OUT1", "STATUS_OUT2", "LOAD1_SATURED", "LOAD2_SATURED", "NIGHT", "Out1_mode", "Out2_mode",
   "BOOST", "ECOMAX", "BOOSTTIME", "TOT_PROD", "TOT_S", "INJECT", "TOTAL_POWER", "AUTO_C", "SUFFI",
   "EFF", "TIME",
 ];
@@ -193,7 +202,36 @@ const STYLE = `
   .controls[hidden] { display: none; }
   .ctl { display: flex; align-items: center; gap: 6px; font-size: .9em; }
   .ctl[hidden] { display: none; }
-  .ctl label { color: var(--secondary-text-color); }
+  .ctl { position: relative; }
+  .led { display: inline-flex; align-items: center; gap: 5px; font-size: .85em; font-weight: 600;
+    color: var(--secondary-text-color); white-space: nowrap; cursor: pointer; }
+  .led[hidden] { display: none; }
+  .led i { width: 12px; height: 12px; border-radius: 50%; box-sizing: border-box; flex: none;
+    background: #fff; border: 1px solid #9e9e9e; }
+  .led.on i { background: #FFD600; border-color: #E0B800; box-shadow: 0 0 6px #FFD60099; }
+  .led.on { color: var(--primary-text-color); }
+  .led.sat i { background: #FF9800; border-color: #E08600; box-shadow: 0 0 6px #FF980099; }
+  .led.sat { color: #E08600; }
+  .lab-chip { display: inline-flex; align-items: center; gap: 5px; font: inherit; font-weight: 600;
+    padding: 4px 10px 4px 7px; border-radius: 999px; border: none; cursor: pointer; white-space: nowrap; }
+  .lab-chip ha-icon { --mdc-icon-size: 18px; }
+  .lab-chip.ecs { background: ${COLORS.ecs}1f; color: ${COLORS.ecs}; }
+  .lab-chip.out2 { background: ${COLORS.out2}1f; color: ${COLORS.out2}; }
+  .lab-chip .caret { font-size: .8em; opacity: .7; }
+  .lab-chip .caret[hidden] { display: none; }
+  #k-out1 select { border-color: ${COLORS.ecs}66; }
+  #k-out2 select { border-color: ${COLORS.out2}66; }
+  .picker { position: absolute; left: 0; bottom: calc(100% + 6px); z-index: 5; display: grid;
+    grid-template-columns: repeat(2, minmax(150px, 1fr)); gap: 2px; padding: 6px; border-radius: 12px;
+    background: var(--card-background-color, #fff); border: 1px solid var(--divider-color);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .18); }
+  .picker[hidden] { display: none; }
+  .picker button { display: flex; align-items: center; gap: 8px; font: inherit; text-align: left;
+    padding: 6px 10px; border: none; border-radius: 8px; background: none; cursor: pointer;
+    color: var(--primary-text-color); }
+  .picker button:hover { background: ${COLORS.out2}14; }
+  .picker button.sel { background: ${COLORS.out2}26; color: ${COLORS.out2}; font-weight: 600; }
+  .picker ha-icon { --mdc-icon-size: 20px; color: ${COLORS.out2}; }
   select { font: inherit; padding: 4px 6px; border-radius: 8px; cursor: pointer;
     border: 1px solid var(--divider-color); background: var(--card-background-color, #fff);
     color: var(--primary-text-color); }
@@ -233,7 +271,7 @@ const STYLE = `
   .bstate ha-icon { --mdc-icon-size: 20px; }
   .bctl { display: flex; align-items: center; gap: 6px; font-size: .9em; }
   .bctl [hidden] { display: none; }
-  .bctl label, .bctl .unit { color: var(--secondary-text-color); }
+  .bctl label, .bctl .unit { color: var(--primary-text-color); font-weight: 700; }
   .bctl input { width: 4.2em; font: inherit; padding: 4px 6px; text-align: center; border-radius: 8px;
     border: 1px solid var(--divider-color); background: var(--card-background-color, #fff);
     color: var(--primary-text-color); }
@@ -325,6 +363,37 @@ class SmartPVRouterCard extends HTMLElement {
     return list.find((r) => r.device_id && r.device_id === this._config.device_id) || list[0];
   }
 
+  // Charge de la Sortie 2 : réglage de la carte, sinon option de l'intégration, sinon « Sortie 2 ».
+  _out2(t) {
+    const c = this._config;
+    const o2 = (this._routerEntry && this._routerEntry.output_2) || {};
+    const type = o2.type || "other";
+    const typeName = type !== "other" && t.types ? t.types[type] : "";
+    return {
+      icon: c.output_2_icon || o2.icon || DEFAULT_OUT2_ICON,
+      name: c.output_2_name || o2.name || typeName || t.output_2,
+      chosen: !!(c.output_2_name || c.output_2_icon || o2.name || type !== "other"),
+    };
+  }
+
+  async _setOutput2(type, icon) {
+    const router = this._routerEntry;
+    if (!router) return;
+    try {
+      await this._hass.callWS({ type: `${DOMAIN}/set_output_2`, entry_id: router.entry_id,
+        output_2_type: type });
+      router.output_2 = { ...(router.output_2 || {}), type, icon };
+      this._built = null;
+      this._sig = null;
+      this._render();
+    } catch (err) {
+      console.error("Smart PV-Router card:", err);
+      this.dispatchEvent(new CustomEvent("hass-notification", {
+        bubbles: true, composed: true, detail: { message: String((err && err.message) || err) },
+      }));
+    }
+  }
+
   _id(key) {
     const id = this._entities && this._entities[key];
     return id && this._hass.states[id] ? id : null;
@@ -374,7 +443,9 @@ class SmartPVRouterCard extends HTMLElement {
     const router = this._router();
     if (!router) return this._message(t.not_found);
     this._entities = router.entities || {};
-    const builtFor = `${router.device_id}|${lang}`;
+    this._routerEntry = router;
+    const o2 = router.output_2 || {};
+    const builtFor = `${router.device_id}|${lang}|${o2.type}|${o2.name}`;
     if (this._built !== builtFor) this._build(t, builtFor);
     const sig = KEYS.map((k) => {
       const s = this._state(k);
@@ -405,7 +476,7 @@ class SmartPVRouterCard extends HTMLElement {
         <div class="layout">
         <div class="scene">
           <svg class="flows" viewBox="0 0 1000 1000" aria-hidden="true">${flows}</svg>
-          ${chip("pv")}${chip("grid")}${chip("house")}${chip("ecs")}${chip("out2", true)}
+          ${chip("pv")}${chip("grid")}${chip("house")}${chip("ecs")}${chip("out2")}
           ${chip("batt")}${chip("ev")}
         </div>
         <div class="side">
@@ -423,8 +494,13 @@ class SmartPVRouterCard extends HTMLElement {
         </div>
         <div class="commands">
         <div class="controls">
-          <span class="ctl" id="k-out1"><label for="m-out1"></label><select id="m-out1"></select></span>
-          <span class="ctl" id="k-out2"><label for="m-out2"></label><select id="m-out2"></select></span>
+          <span class="ctl" id="k-out1"><button class="lab-chip ecs" id="l-out1">
+            <ha-icon icon="mdi:water-boiler"></ha-icon><span></span></button><select id="m-out1"></select>
+            <span class="led" id="led-out1" hidden><i></i><span></span></span></span>
+          <span class="ctl" id="k-out2"><button class="lab-chip out2" id="l-out2">
+            <ha-icon></ha-icon><span></span><span class="caret" hidden>▾</span></button><select id="m-out2"></select>
+            <span class="led" id="led-out2" hidden><i></i><span></span></span>
+            <div class="picker" id="picker" hidden></div></span>
         </div>
         <div class="actions">
           <span class="boost" id="boost" hidden>
@@ -450,8 +526,47 @@ class SmartPVRouterCard extends HTMLElement {
     const title = c.title === undefined ? "Smart PV-Router" : c.title;
     $(".title").textContent = title;
     $(".title").hidden = !title;
-    $("#k-out1 label").textContent = c.output_1_name || t.water_heater;
-    $("#k-out2 label").textContent = c.output_2_name || t.output_2;
+    const out2 = this._out2(t);
+    $("#l-out1 span").textContent = c.output_1_name || t.water_heater;
+    $("#l-out2 span").textContent = out2.name;
+    $("#l-out2 ha-icon").setAttribute("icon", out2.icon);
+    $("#l-out1").addEventListener("click", () => this._moreInfo("POUT1"));
+    $("#led-out1").addEventListener("click", () => this._moreInfo("STATUS_OUT1"));
+    $("#led-out2").addEventListener("click", () => this._moreInfo("STATUS_OUT2"));
+    // Sortie 2 : un administrateur choisit la charge (radiateur, piscine...) ; sinon, détail de l'entité.
+    const canPick = !!(this._hass.user && this._hass.user.is_admin) && !!this._routerEntry
+      && !c.output_2_icon;
+    $("#l-out2 .caret").hidden = !canPick;
+    $("#l-out2").title = canPick ? t.pick_type : "";
+    const picker = $("#picker");
+    if (canPick) {
+      const current = (this._routerEntry.output_2 || {}).type || "other";
+      for (const [type, icon] of Object.entries(this._routerEntry.output_2_types || {})) {
+        const b = document.createElement("button");
+        b.className = type === current ? "sel" : "";
+        const ic = document.createElement("ha-icon");
+        ic.setAttribute("icon", icon);
+        const lab = document.createElement("span");
+        lab.textContent = (t.types && t.types[type]) || type;
+        b.append(ic, lab);
+        b.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          picker.hidden = true;
+          this._setOutput2(type, icon);
+        });
+        picker.appendChild(b);
+      }
+    }
+    $("#l-out2").addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      if (canPick) picker.hidden = !picker.hidden;
+      else this._moreInfo("POUT2");
+    });
+    if (!this._closePicker) {
+      // Un seul écouteur sur la racine (elle survit aux reconstructions) : un clic ailleurs ferme la liste.
+      this._closePicker = () => { const p = root.querySelector("#picker"); if (p) p.hidden = true; };
+      root.addEventListener("click", this._closePicker);
+    }
     $(".eco-lab span").textContent = t.ecomax;
     $("#b-night").textContent = t.night;
     $("#bo-dur-label").textContent = t.duration;
@@ -521,7 +636,8 @@ class SmartPVRouterCard extends HTMLElement {
     const hasBatt = !!this._id("BATT");
     const hasEv = !!this._id("EVPOWER");
     const mode2 = this._state("Out2_mode");
-    const showOut2 = !!mode2 && (mode2.state !== "stop" || val("LOAD2") > 0 || !!c.output_2_name);
+    const out2Cfg = this._out2(t);
+    const showOut2 = !!mode2 && (mode2.state !== "stop" || val("LOAD2") > 0 || out2Cfg.chosen);
 
     // La voiture n'est dans le garage (ouvert) que pendant une charge : /getjson ne dit pas si elle
     // est branchée, seule la puissance de la borne le montre. Sinon, garage fermé.
@@ -553,25 +669,38 @@ class SmartPVRouterCard extends HTMLElement {
     this._chip("house", "mdi:home", COLORS.house, t.house, power(this._num("HOUSE")));
 
     const temp = this._num("TEMP1");
-    const ecsName = c.output_1_name || t.water_heater;
+    const mode1 = this._state("Out1_mode");
+    // En marche forcée, la ligne du haut le dit (sinon routage et marche forcée se ressemblent).
+    const ecsName = mode1 && mode1.state === "forced" ? this._format(mode1, "forced")
+      : c.output_1_name || t.water_heater;
     const ecsCap = temp === null ? ecsName : `${ecsName} · ${nf0.format(temp)} °C`;
     if (this._on("BOOST")) {
       const rem = this._num("BOOSTREM");
       this._chip("ecs", "mdi:rocket-launch", COLORS.ecs,
         t.boost_rem.replace("{n}", rem === null ? "—" : nf0.format(rem)), power(ecs));
     } else if (this._on("LOAD1_SATURED") && ecs < ACTIVE_W) {
-      this._chip("ecs", "mdi:check-circle", COLORS.ok, ecsCap, t.hot);
+      // Même rouge que l'étiquette « Chauffe-eau » sous la photo ; l'état se lit dans la valeur.
+      this._chip("ecs", "mdi:water-boiler", COLORS.ecs, ecsCap, t.hot, false, COLORS.ok);
     } else if (ecs > ACTIVE_W) {
       this._chip("ecs", "mdi:fire", COLORS.ecs, ecsCap, power(ecs));
     } else {
-      this._chip("ecs", "mdi:shower-head", COLORS.muted, ecsCap, power(ecs));
+      // Ne chauffe pas : « Arrêt » si le mode est Arrêt, « Attente » sinon (comme la Sortie 2).
+      const idle = mode1 && mode1.state === "stop" ? t.stopped : t.waiting;
+      this._chip("ecs", "mdi:water-boiler", COLORS.ecs, ecsCap, idle, false, COLORS.muted);
     }
 
     if (showOut2) {
-      const on2 = this._on("STATUS_OUT2");
-      const value = on2 ? power(out2) : mode2.state === "stop" ? t.stopped : t.waiting;
-      this._chip("out2", c.output_2_icon || DEFAULT_OUT2_ICON, on2 ? COLORS.out2 : COLORS.muted,
-        c.output_2_name || t.output_2, value, true);
+      // Même logique que le chauffe-eau : Saturée, puissance (routage ou marche forcée), Arrêt, Attente.
+      // Toujours le bleu de l'étiquette « Sortie 2 » sous la photo ; l'état se lit dans la valeur.
+      const out2Cap = mode2.state === "forced" ? this._format(mode2, "forced") : out2Cfg.name;
+      if (this._on("LOAD2_SATURED") && out2 < ACTIVE_W) {
+        this._chip("out2", out2Cfg.icon, COLORS.out2, out2Cap, t.st_sat, false, COLORS.sat);
+      } else if (out2 > ACTIVE_W) {
+        this._chip("out2", out2Cfg.icon, COLORS.out2, out2Cap, power(out2), false, COLORS.out2);
+      } else {
+        const idle = mode2.state === "stop" ? t.stopped : t.waiting;
+        this._chip("out2", out2Cfg.icon, COLORS.out2, out2Cap, idle, false, COLORS.muted);
+      }
     } else this._hide("out2");
 
     if (hasBatt) {
@@ -586,6 +715,15 @@ class SmartPVRouterCard extends HTMLElement {
     // Modes des sorties, EcoMax, nuit, alarme
     this._updateMode("#m-out1", "#k-out1", "Out1_mode");
     this._updateMode("#m-out2", "#k-out2", "Out2_mode");
+    for (const [n, statusKey, satKey] of [["1", "STATUS_OUT1", "LOAD1_SATURED"], ["2", "STATUS_OUT2", "LOAD2_SATURED"]]) {
+      const led = $(`#led-out${n}`);
+      led.hidden = !this._id(statusKey) && !this._id(satKey);
+      const sat = this._on(satKey);
+      const on = this._on(statusKey);
+      led.classList.toggle("sat", sat);
+      led.classList.toggle("on", on && !sat);
+      led.querySelector("span").textContent = sat ? t.st_sat : on ? t.st_on : t.stopped;
+    }
     const ecomax = this._state("ECOMAX");
     $("#eco").hidden = !ecomax;
     $("#eco-sw").setAttribute("aria-checked", String(!!ecomax && ecomax.state === "on"));
@@ -648,7 +786,8 @@ class SmartPVRouterCard extends HTMLElement {
     for (const p of g.querySelectorAll(".dots, .halo")) p.style.animationDuration = `${seconds.toFixed(2)}s`;
   }
 
-  _chip(name, icon, color, caption, value, node = false) {
+  // color : icône (couleur de l'élément) ; valueColor : valeur, si elle doit différer (état).
+  _chip(name, icon, color, caption, value, node = false, valueColor = null) {
     const el = this._root().querySelector(`#c-${name}`);
     el.hidden = false;
     const ic = el.querySelector("ha-icon");
@@ -658,7 +797,7 @@ class SmartPVRouterCard extends HTMLElement {
     el.querySelector(".cap").textContent = caption;
     const v = el.querySelector(".val");
     v.textContent = value;
-    v.style.color = node ? "#323232" : color;
+    v.style.color = valueColor || (node ? "#323232" : color);
   }
 
   _hide(name) {

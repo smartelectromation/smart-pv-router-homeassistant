@@ -28,6 +28,36 @@
       "not_router": "Cet appareil n'est pas un Smart PV-Router."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Charge de la Sortie 2",
+        "description": "Appareil branché sur la Sortie 2 : il donne l'icône et le nom affichés sur la carte Smart PV-Router.",
+        "data": {
+          "output_2_type": "Type de charge",
+          "output_2_name": "Nom (facultatif)"
+        },
+        "data_description": {
+          "output_2_name": "Laisser vide pour utiliser le nom du type."
+        }
+      }
+    }
+  },
+  "selector": {
+    "output_2_type": {
+      "options": {
+        "other": "Autre (Sortie 2)",
+        "radiator": "Radiateur",
+        "pool": "Piscine",
+        "hot_tub": "Spa / jacuzzi",
+        "ev": "Voiture (prise Green'Up)",
+        "heat_pump": "Pompe à chaleur",
+        "water_heater": "Second chauffe-eau",
+        "air_conditioner": "Climatisation",
+        "socket": "Prise"
+      }
+    }
+  },
   "entity": {
     "binary_sensor": {
       "output_1_active": { "name": "Sortie 1 active" },

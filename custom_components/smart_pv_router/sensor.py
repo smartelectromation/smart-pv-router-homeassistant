@@ -81,6 +81,19 @@ def _house_power(data: dict[str, Any]) -> StateType:
     return round(max(consumption - out1 - out2 - (to_float(data.get("EVPOWER")) or 0.0), 0.0))
 
 
+def _router_time(data: dict[str, Any]) -> StateType:
+    """Heure du routeur toujours sur deux chiffres : « 9:5 » devient « 09:05 »."""
+    raw = data.get("TIME")
+    if not isinstance(raw, str) or not raw.strip():
+        return None
+    parts = raw.strip().split(":")
+    try:
+        hours, minutes = int(parts[0]), int(parts[1])
+    except (IndexError, ValueError):
+        return raw.strip()
+    return f"{hours:02d}:{minutes:02d}"
+
+
 def _grid_alarm(data: dict[str, Any]) -> StateType:
     code = to_int(data.get("GRID_ERR"))
     return None if code is None else GRID_ALARMS.get(code)
@@ -231,7 +244,7 @@ SENSORS: tuple[SmartPVRouterSensorDescription, ...] = (
         key="TIME",
         translation_key="router_time",
         entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda data: data.get("TIME") or None,
+        value_fn=_router_time,
     ),
     SmartPVRouterSensorDescription(
         key="WIFI",

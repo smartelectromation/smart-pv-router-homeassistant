@@ -76,7 +76,9 @@ mettre aussi dans un de vos tableaux de bord : **Modifier** > **Ajouter une cart
 - Flux d'énergie animés entre le routeur et le solaire, le réseau, le chauffe-eau, la Sortie 2, la
   batterie et la borne VE ; pastilles avec la puissance de chacun.
 - Mode de chaque sortie, EcoMax, Boost et sa durée, directement sur la carte.
-- Nom et icône de la Sortie 2 au choix, dans l'éditeur de la carte.
+- **Charge de la Sortie 2** au choix (radiateur, piscine, spa, voiture Green'Up, pompe à chaleur,
+  second chauffe-eau, climatisation, prise) : clic sur « Sortie 2 » sous la photo, ou Paramètres >
+  Appareils et services > Smart PV-Router > **Configurer**. L'icône et le nom suivent partout.
 
 La puissance de chaque sortie est déduite de la puissance routée, mesure commune aux deux sorties : la
 Sortie 1 prend jusqu'à la puissance de sa charge, le reste va à la Sortie 2 (même calcul que
@@ -193,7 +195,9 @@ your dashboards: **Edit** > **Add card** > "Smart PV-Router".
 - Animated energy flows between the router and the solar panels, the grid, the water heater, Output 2,
   the battery and the EV charger; a chip with the power of each.
 - Mode of each output, EcoMax, Boost and its duration, right on the card.
-- Name and icon of Output 2 of your choice, in the card editor.
+- **Output 2 load** of your choice (radiator, pool, hot tub, Green'Up car, heat pump, second water
+  heater, air conditioning, socket): click "Output 2" below the picture, or Settings > Devices &
+  services > Smart PV-Router > **Configure**. The icon and name follow everywhere.
 
 The power of each output is derived from the diverted power, a single measurement for both outputs:
 Output 1 takes up to the power of its load, the rest goes to Output 2 (same calculation as the app and

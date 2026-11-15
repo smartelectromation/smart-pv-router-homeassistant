@@ -28,6 +28,36 @@
       "not_router": "This device is not a Smart PV-Router."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Output 2 load",
+        "description": "Appliance connected to Output 2: it sets the icon and name shown on the Smart PV-Router card.",
+        "data": {
+          "output_2_type": "Load type",
+          "output_2_name": "Name (optional)"
+        },
+        "data_description": {
+          "output_2_name": "Leave empty to use the type name."
+        }
+      }
+    }
+  },
+  "selector": {
+    "output_2_type": {
+      "options": {
+        "other": "Other (Output 2)",
+        "radiator": "Radiator",
+        "pool": "Pool",
+        "hot_tub": "Hot tub",
+        "ev": "Car (Green'Up socket)",
+        "heat_pump": "Heat pump",
+        "water_heater": "Second water heater",
+        "air_conditioner": "Air conditioning",
+        "socket": "Socket"
+      }
+    }
+  },
   "entity": {
     "binary_sensor": {
       "output_1_active": { "name": "Output 1 active" },

@@ -20,6 +20,23 @@ CARD_URL_BASE = "/smart_pv_router_card"
 CARD_FILE = "smart-pv-router-card.js"
 CARD_VERSION = "0.2.0"
 
+# Charge branchée sur la Sortie 2 (options de l'intégration, comme dans l'application mobile) :
+# type → icône. Le nom affiché est celui du type, sauf si l'utilisateur en saisit un.
+CONF_OUTPUT_2_TYPE = "output_2_type"
+CONF_OUTPUT_2_NAME = "output_2_name"
+DEFAULT_OUTPUT_2_TYPE = "other"
+OUTPUT_2_TYPES: dict[str, str] = {
+    "other": "mdi:flash",
+    "radiator": "mdi:radiator",
+    "pool": "mdi:pool",
+    "hot_tub": "mdi:hot-tub",
+    "ev": "mdi:car-electric",
+    "heat_pump": "mdi:heat-pump",
+    "water_heater": "mdi:water-boiler",
+    "air_conditioner": "mdi:air-conditioner",
+    "socket": "mdi:power-socket-fr",
+}
+
 # Entrée « Smart PV-Router » de la barre latérale : la carte en pleine page, ajoutée dès qu'un
 # routeur est configuré. Le tiret bas évite tout conflit avec un tableau de bord créé par
 # l'utilisateur (leurs adresses contiennent un tiret).

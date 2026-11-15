@@ -23,6 +23,10 @@ from homeassistant.helpers import device_registry as dr, entity_registry as er
 
 from .const import (
     CARD_FILE,
+    CONF_OUTPUT_2_NAME,
+    CONF_OUTPUT_2_TYPE,
+    DEFAULT_OUTPUT_2_TYPE,
+    OUTPUT_2_TYPES,
     CARD_URL_BASE,
     CARD_VERSION,
     DOMAIN,
@@ -59,6 +63,7 @@ async def async_register_card(hass: HomeAssistant) -> None:
     Appelé une seule fois par démarrage de Home Assistant (async_setup de l'intégration).
     """
     websocket_api.async_register_command(hass, websocket_routers)
+    websocket_api.async_register_command(hass, websocket_set_output_2)
     if hass.http is None:  # Home Assistant sans serveur web (tests)
         LOGGER.debug("Pas de serveur web : carte non servie")
         return
@@ -121,11 +126,49 @@ def websocket_routers(
             for reg in er.async_entries_for_config_entry(entity_registry, entry.entry_id)
             if reg.unique_id.startswith(prefix) and reg.disabled_by is None
         }
+        output_2_type = entry.options.get(CONF_OUTPUT_2_TYPE, DEFAULT_OUTPUT_2_TYPE)
+        if output_2_type not in OUTPUT_2_TYPES:
+            output_2_type = DEFAULT_OUTPUT_2_TYPE
         routers.append(
             {
+                "entry_id": entry.entry_id,
                 "device_id": device.id if device else None,
                 "name": (device.name_by_user or device.name) if device else entry.title,
                 "entities": entities,
+                "output_2": {
+                    "type": output_2_type,
+                    "icon": OUTPUT_2_TYPES[output_2_type],
+                    "name": entry.options.get(CONF_OUTPUT_2_NAME, ""),
+                },
+                "output_2_types": OUTPUT_2_TYPES,
             }
         )
     connection.send_result(msg["id"], {"routers": routers})
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/set_output_2",
+        vol.Required("entry_id"): str,
+        vol.Required("output_2_type"): vol.In(list(OUTPUT_2_TYPES)),
+        vol.Optional("output_2_name"): str,
+    }
+)
+@callback
+def websocket_set_output_2(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Changer la charge de la Sortie 2 depuis la carte (administrateurs seulement).
+
+    Même réglage que les options de l'intégration (Configurer).
+    """
+    entry = hass.config_entries.async_get_entry(msg["entry_id"])
+    if entry is None or entry.domain != DOMAIN:
+        connection.send_error(msg["id"], "not_found", "Smart PV-Router introuvable")
+        return
+    options = {**entry.options, CONF_OUTPUT_2_TYPE: msg["output_2_type"]}
+    if "output_2_name" in msg:
+        options[CONF_OUTPUT_2_NAME] = msg["output_2_name"].strip()
+    hass.config_entries.async_update_entry(entry, options=options)
+    connection.send_result(msg["id"])

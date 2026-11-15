@@ -6,18 +6,34 @@ from typing import Any
 
 import voluptuous as vol
 
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigFlow,
+    ConfigFlowResult,
+    OptionsFlow,
+)
 from homeassistant.const import CONF_HOST
+from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.device_registry import format_mac
+from homeassistant.helpers.selector import (
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
+    TextSelector,
+)
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 
 from .api import SmartPVRouterApi, SmartPVRouterError
 from .const import (
+    CONF_OUTPUT_2_NAME,
+    CONF_OUTPUT_2_TYPE,
     DEFAULT_HOST,
+    DEFAULT_OUTPUT_2_TYPE,
     DEVICE_NAME,
     DOMAIN,
     LOGGER,
+    OUTPUT_2_TYPES,
     ROUTER_MODEL,
     ZEROCONF_MAC_PREFIX,
     ZEROCONF_MAC_PROPERTY,
@@ -44,10 +60,51 @@ def _mac_from_hex(value: Any) -> str | None:
     return format_mac(value)
 
 
+# Options : charge branchée sur la Sortie 2 (icône et nom sur la carte et dans l'application).
+OPTIONS_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_OUTPUT_2_TYPE, default=DEFAULT_OUTPUT_2_TYPE): SelectSelector(
+            SelectSelectorConfig(
+                options=list(OUTPUT_2_TYPES),
+                translation_key=CONF_OUTPUT_2_TYPE,
+                mode=SelectSelectorMode.LIST,
+            )
+        ),
+        vol.Optional(CONF_OUTPUT_2_NAME): TextSelector(),
+    }
+)
+
+
+class SmartPVRouterOptionsFlow(OptionsFlow):
+    """Réglages de l'intégration : charge de la Sortie 2."""
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Choisir le type et, si besoin, le nom de la charge de la Sortie 2."""
+        if user_input is not None:
+            name = (user_input.get(CONF_OUTPUT_2_NAME) or "").strip()
+            return self.async_create_entry(
+                data={CONF_OUTPUT_2_TYPE: user_input[CONF_OUTPUT_2_TYPE], CONF_OUTPUT_2_NAME: name}
+            )
+        return self.async_show_form(
+            step_id="init",
+            data_schema=self.add_suggested_values_to_schema(
+                OPTIONS_SCHEMA, self.config_entry.options
+            ),
+        )
+
+
 class SmartPVRouterConfigFlow(ConfigFlow, domain=DOMAIN):
     """Assistant d'ajout du Smart PV-Router."""
 
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> SmartPVRouterOptionsFlow:
+        """Réglages de l'intégration (Configurer)."""
+        return SmartPVRouterOptionsFlow()
 
     def __init__(self) -> None:
         """Préparer l'assistant."""
