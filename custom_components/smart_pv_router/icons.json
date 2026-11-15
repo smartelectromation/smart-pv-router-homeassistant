@@ -1,0 +1,104 @@
+{
+  "entity": {
+    "binary_sensor": {
+      "output_1_active": {
+        "default": "mdi:power-plug-off-outline",
+        "state": { "on": "mdi:power-plug", "off": "mdi:power-plug-off-outline" }
+      },
+      "output_2_active": {
+        "default": "mdi:power-plug-off-outline",
+        "state": { "on": "mdi:power-plug", "off": "mdi:power-plug-off-outline" }
+      },
+      "output_1_saturated": {
+        "default": "mdi:water-boiler",
+        "state": { "on": "mdi:water-boiler-alert", "off": "mdi:water-boiler" }
+      },
+      "output_2_saturated": {
+        "default": "mdi:water-boiler",
+        "state": { "on": "mdi:water-boiler-alert", "off": "mdi:water-boiler" }
+      },
+      "night_period": {
+        "default": "mdi:weather-night",
+        "state": { "on": "mdi:weather-night", "off": "mdi:weather-sunny" }
+      },
+      "anti_bacteria_cycle": {
+        "default": "mdi:bacteria-outline",
+        "state": { "on": "mdi:bacteria", "off": "mdi:bacteria-outline" }
+      }
+    },
+    "button": {
+      "calibrate_output_2": { "default": "mdi:tape-measure" }
+    },
+    "number": {
+      "night_setpoint": { "default": "mdi:thermostat" },
+      "boost_duration": { "default": "mdi:timer-cog-outline" },
+      "manual_dimmer_1": { "default": "mdi:knob" },
+      "manual_dimmer_2": { "default": "mdi:knob" }
+    },
+    "select": {
+      "output_1_mode": {
+        "default": "mdi:tune-variant",
+        "state": {
+          "stop": "mdi:power-off",
+          "auto": "mdi:refresh-auto",
+          "forced": "mdi:power-plug",
+          "dimmer": "mdi:tune-vertical",
+          "manual_dimmer": "mdi:knob"
+        }
+      },
+      "output_2_mode": {
+        "default": "mdi:tune-variant",
+        "state": {
+          "stop": "mdi:power-off",
+          "auto": "mdi:refresh-auto",
+          "forced": "mdi:power-plug",
+          "dimmer": "mdi:tune-vertical",
+          "manual_dimmer": "mdi:knob"
+        }
+      }
+    },
+    "sensor": {
+      "grid_power": { "default": "mdi:transmission-tower" },
+      "grid_export_power": { "default": "mdi:transmission-tower-export" },
+      "solar_power": { "default": "mdi:solar-power-variant" },
+      "diverted_power": { "default": "mdi:water-boiler" },
+      "battery_power": { "default": "mdi:home-battery" },
+      "ev_charger_power": { "default": "mdi:ev-station" },
+      "grid_import_energy": { "default": "mdi:transmission-tower-import" },
+      "grid_export_energy": { "default": "mdi:transmission-tower-export" },
+      "solar_energy": { "default": "mdi:solar-power" },
+      "diverted_energy": { "default": "mdi:water-boiler" },
+      "solar_diverted_energy": { "default": "mdi:sun-thermometer" },
+      "self_sufficiency": { "default": "mdi:home-lightning-bolt" },
+      "self_consumption": { "default": "mdi:white-balance-sunny" },
+      "diversion_efficiency": { "default": "mdi:gauge" },
+      "water_heater_temperature": { "default": "mdi:water-thermometer" },
+      "probe_2_temperature": { "default": "mdi:thermometer-probe" },
+      "boost_remaining": { "default": "mdi:timer-sand" },
+      "output_1_load": { "default": "mdi:heating-coil" },
+      "output_2_load": { "default": "mdi:heating-coil" },
+      "grid_alarm": {
+        "default": "mdi:transmission-tower",
+        "state": {
+          "none": "mdi:check-circle-outline",
+          "no_measure": "mdi:transmission-tower-off",
+          "frozen": "mdi:snowflake-alert"
+        }
+      }
+    },
+    "switch": {
+      "boost": {
+        "default": "mdi:fire",
+        "state": { "on": "mdi:fire", "off": "mdi:fire-off" }
+      },
+      "ecomax": {
+        "default": "mdi:leaf",
+        "state": { "on": "mdi:leaf", "off": "mdi:leaf-off" }
+      },
+      "display": {
+        "default": "mdi:monitor",
+        "state": { "on": "mdi:monitor", "off": "mdi:monitor-off" }
+      }
+    }
+  }
+}

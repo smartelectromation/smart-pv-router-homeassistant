@@ -1,0 +1,20 @@
+{
+  "domain": "smart_pv_router",
+  "name": "Smart PV-Router by Smart Electromation Technology",
+  "codeowners": ["@loraraspi91"],
+  "config_flow": true,
+  "documentation": "https://github.com/smartelectromation/smart-pv-router-homeassistant",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/smartelectromation/smart-pv-router-homeassistant/issues",
+  "requirements": [],
+  "version": "0.1.0",
+  "zeroconf": [
+    {
+      "type": "_http._tcp.local.",
+      "properties": {
+        "pvr-mac": "pvr-*"
+      }
+    }
+  ]
+}

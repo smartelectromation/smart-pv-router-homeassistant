@@ -1,0 +1,117 @@
+{
+  "config": {
+    "flow_title": "Smart PV-Router ({host})",
+    "step": {
+      "user": {
+        "title": "Smart PV-Router by Smart Electromation Technology",
+        "description": "Address of the router on your local network.",
+        "data": {
+          "host": "Host"
+        },
+        "data_description": {
+          "host": "pvrouter.local or the IP address of the router (firmware V12_36 or later)."
+        }
+      },
+      "zeroconf_confirm": {
+        "title": "Smart PV-Router found",
+        "description": "Add the Smart PV-Router found at {host}?"
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot reach the router. Check the address and that the router is on the same network.",
+      "not_router": "This device answers, but it is not a Smart PV-Router.",
+      "unknown": "Unexpected error."
+    },
+    "abort": {
+      "already_configured": "This Smart PV-Router is already configured.",
+      "cannot_connect": "Cannot reach the router.",
+      "not_router": "This device is not a Smart PV-Router."
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "output_1_active": { "name": "Output 1 active" },
+      "output_2_active": { "name": "Output 2 active" },
+      "output_1_saturated": { "name": "Output 1 load saturated" },
+      "output_2_saturated": { "name": "Output 2 load saturated" },
+      "night_period": { "name": "Night period" },
+      "anti_bacteria_cycle": { "name": "Anti-bacteria cycle" },
+      "mqtt_connected": { "name": "MQTT connected" }
+    },
+    "button": {
+      "calibrate_output_2": { "name": "Calibrate output 2" }
+    },
+    "number": {
+      "night_setpoint": { "name": "Night setpoint" },
+      "boost_duration": { "name": "Boost duration" },
+      "manual_dimmer_1": { "name": "Manual dimmer output 1" },
+      "manual_dimmer_2": { "name": "Manual dimmer output 2" }
+    },
+    "select": {
+      "output_1_mode": {
+        "name": "Output 1 mode",
+        "state": {
+          "stop": "Off",
+          "auto": "Automatic",
+          "forced": "Forced on",
+          "dimmer": "Dimmer",
+          "manual_dimmer": "Manual dimmer"
+        }
+      },
+      "output_2_mode": {
+        "name": "Output 2 mode",
+        "state": {
+          "stop": "Off",
+          "auto": "Automatic",
+          "forced": "Forced on",
+          "dimmer": "Dimmer",
+          "manual_dimmer": "Manual dimmer"
+        }
+      }
+    },
+    "sensor": {
+      "grid_power": { "name": "Grid power" },
+      "grid_export_power": { "name": "Grid export power" },
+      "solar_power": { "name": "Solar power" },
+      "diverted_power": { "name": "Diverted power" },
+      "battery_power": { "name": "Battery power" },
+      "ev_charger_power": { "name": "EV charger power" },
+      "grid_voltage": { "name": "Grid voltage" },
+      "grid_current": { "name": "Grid current" },
+      "output_current": { "name": "Output current" },
+      "grid_import_energy": { "name": "Grid import energy" },
+      "grid_export_energy": { "name": "Grid export energy" },
+      "solar_energy": { "name": "Solar energy" },
+      "diverted_energy": { "name": "Diverted energy" },
+      "solar_diverted_energy": { "name": "Solar diverted energy" },
+      "self_sufficiency": { "name": "Self-sufficiency today" },
+      "self_consumption": { "name": "Self-consumption today" },
+      "diversion_efficiency": { "name": "Diversion efficiency" },
+      "water_heater_temperature": { "name": "Water heater temperature" },
+      "probe_2_temperature": { "name": "Probe 2 temperature" },
+      "boost_remaining": { "name": "Boost remaining" },
+      "output_1_load": { "name": "Output 1 load" },
+      "output_2_load": { "name": "Output 2 load" },
+      "grid_alarm": {
+        "name": "Grid alarm",
+        "state": {
+          "none": "None",
+          "no_measure": "No measurement (No GRID)",
+          "frozen": "Frozen measurement"
+        }
+      },
+      "wifi_signal": { "name": "WiFi signal" },
+      "rtc_temperature": { "name": "RTC temperature" }
+    },
+    "switch": {
+      "boost": { "name": "Boost" },
+      "ecomax": { "name": "EcoMax" },
+      "display": { "name": "Display" }
+    }
+  },
+  "exceptions": {
+    "command_failed": {
+      "message": "The Smart PV-Router did not carry out the command."
+    }
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "config": {
+    "flow_title": "Smart PV-Router ({host})",
+    "step": {
+      "user": {
+        "title": "Smart PV-Router by Smart Electromation Technology",
+        "description": "Adresse du routeur sur le réseau local.",
+        "data": {
+          "host": "Hôte"
+        },
+        "data_description": {
+          "host": "pvrouter.local ou l'adresse IP du routeur (firmware V12_36 ou plus récent)."
+        }
+      },
+      "zeroconf_confirm": {
+        "title": "Smart PV-Router trouvé",
+        "description": "Ajouter le Smart PV-Router trouvé à l'adresse {host} ?"
+      }
+    },
+    "error": {
+      "cannot_connect": "Impossible de joindre le routeur. Vérifiez l'adresse et que le routeur est sur le même réseau.",
+      "not_router": "Cet appareil répond, mais ce n'est pas un Smart PV-Router.",
+      "unknown": "Erreur inattendue."
+    },
+    "abort": {
+      "already_configured": "Ce Smart PV-Router est déjà configuré.",
+      "cannot_connect": "Impossible de joindre le routeur.",
+      "not_router": "Cet appareil n'est pas un Smart PV-Router."
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "output_1_active": { "name": "Sortie 1 active" },
+      "output_2_active": { "name": "Sortie 2 active" },
+      "output_1_saturated": { "name": "Charge Sortie 1 saturée" },
+      "output_2_saturated": { "name": "Charge Sortie 2 saturée" },
+      "night_period": { "name": "Période de nuit" },
+      "anti_bacteria_cycle": { "name": "Cycle anti-bactéries" },
+      "mqtt_connected": { "name": "MQTT connecté" }
+    },
+    "button": {
+      "calibrate_output_2": { "name": "Calibrer la Sortie 2" }
+    },
+    "number": {
+      "night_setpoint": { "name": "Consigne de nuit" },
+      "boost_duration": { "name": "Durée du Boost" },
+      "manual_dimmer_1": { "name": "Gradation manuelle Sortie 1" },
+      "manual_dimmer_2": { "name": "Gradation manuelle Sortie 2" }
+    },
+    "select": {
+      "output_1_mode": {
+        "name": "Mode Sortie 1",
+        "state": {
+          "stop": "Arrêt",
+          "auto": "Automatique",
+          "forced": "Marche forcée",
+          "dimmer": "Gradation",
+          "manual_dimmer": "Gradation manuelle"
+        }
+      },
+      "output_2_mode": {
+        "name": "Mode Sortie 2",
+        "state": {
+          "stop": "Arrêt",
+          "auto": "Automatique",
+          "forced": "Marche forcée",
+          "dimmer": "Gradation",
+          "manual_dimmer": "Gradation manuelle"
+        }
+      }
+    },
+    "sensor": {
+      "grid_power": { "name": "Puissance réseau" },
+      "grid_export_power": { "name": "Puissance injectée" },
+      "solar_power": { "name": "Production solaire" },
+      "diverted_power": { "name": "Puissance routée" },
+      "battery_power": { "name": "Puissance batterie" },
+      "ev_charger_power": { "name": "Puissance borne VE" },
+      "grid_voltage": { "name": "Tension réseau" },
+      "grid_current": { "name": "Courant réseau" },
+      "output_current": { "name": "Courant des sorties" },
+      "grid_import_energy": { "name": "Énergie soutirée au réseau" },
+      "grid_export_energy": { "name": "Énergie injectée au réseau" },
+      "solar_energy": { "name": "Énergie solaire produite" },
+      "diverted_energy": { "name": "Énergie routée" },
+      "solar_diverted_energy": { "name": "Énergie solaire routée" },
+      "self_sufficiency": { "name": "Autoproduction du jour" },
+      "self_consumption": { "name": "Autoconsommation du jour" },
+      "diversion_efficiency": { "name": "Rendement du routage" },
+      "water_heater_temperature": { "name": "Température du ballon" },
+      "probe_2_temperature": { "name": "Température sonde 2" },
+      "boost_remaining": { "name": "Boost restant" },
+      "output_1_load": { "name": "Charge Sortie 1" },
+      "output_2_load": { "name": "Charge Sortie 2" },
+      "grid_alarm": {
+        "name": "Alarme réseau",
+        "state": {
+          "none": "Aucune",
+          "no_measure": "Plus aucune mesure (No GRID)",
+          "frozen": "Mesure figée"
+        }
+      },
+      "wifi_signal": { "name": "Signal WiFi" },
+      "rtc_temperature": { "name": "Température RTC" }
+    },
+    "switch": {
+      "boost": { "name": "Boost" },
+      "ecomax": { "name": "EcoMax" },
+      "display": { "name": "Écran" }
+    }
+  },
+  "exceptions": {
+    "command_failed": {
+      "message": "Le Smart PV-Router n'a pas exécuté la commande."
+    }
+  }
+}
