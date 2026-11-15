@@ -76,6 +76,9 @@
       "diverted_power": { "name": "Puissance routée" },
       "battery_power": { "name": "Puissance batterie" },
       "ev_charger_power": { "name": "Puissance borne VE" },
+      "house_power": { "name": "Consommation de la maison" },
+      "output_1_power": { "name": "Puissance Sortie 1" },
+      "output_2_power": { "name": "Puissance Sortie 2" },
       "grid_voltage": { "name": "Tension réseau" },
       "grid_current": { "name": "Courant réseau" },
       "output_current": { "name": "Courant des sorties" },
@@ -100,6 +103,7 @@
           "frozen": "Mesure figée"
         }
       },
+      "router_time": { "name": "Heure du routeur" },
       "wifi_signal": { "name": "Signal WiFi" },
       "rtc_temperature": { "name": "Température RTC" }
     },

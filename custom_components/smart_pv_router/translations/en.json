@@ -76,6 +76,9 @@
       "diverted_power": { "name": "Diverted power" },
       "battery_power": { "name": "Battery power" },
       "ev_charger_power": { "name": "EV charger power" },
+      "house_power": { "name": "House consumption" },
+      "output_1_power": { "name": "Output 1 power" },
+      "output_2_power": { "name": "Output 2 power" },
       "grid_voltage": { "name": "Grid voltage" },
       "grid_current": { "name": "Grid current" },
       "output_current": { "name": "Output current" },
@@ -100,6 +103,7 @@
           "frozen": "Frozen measurement"
         }
       },
+      "router_time": { "name": "Router time" },
       "wifi_signal": { "name": "WiFi signal" },
       "rtc_temperature": { "name": "RTC temperature" }
     },

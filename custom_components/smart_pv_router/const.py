@@ -13,6 +13,21 @@ SCAN_INTERVAL = timedelta(seconds=5)
 
 DEFAULT_HOST = "pvrouter.local"
 
+# Carte « Smart PV-Router » : fichiers du dossier www/, servis sous cette adresse. La version
+# (celle du manifest) est ajoutée à l'adresse du script pour que le navigateur recharge la
+# carte après une mise à jour.
+CARD_URL_BASE = "/smart_pv_router_card"
+CARD_FILE = "smart-pv-router-card.js"
+CARD_VERSION = "0.2.0"
+
+# Entrée « Smart PV-Router » de la barre latérale : la carte en pleine page, ajoutée dès qu'un
+# routeur est configuré. Le tiret bas évite tout conflit avec un tableau de bord créé par
+# l'utilisateur (leurs adresses contiennent un tiret).
+PANEL_URL = "smart_pv_router"
+PANEL_ELEMENT = "smart-pv-router-panel"
+PANEL_TITLE = "Smart PV-Router"
+PANEL_ICON = "mdi:solar-power-variant"
+
 MANUFACTURER = "Smart Electromation Technology"
 MODEL = "Smart PV-Router"
 DEVICE_NAME = "Smart PV-Router"

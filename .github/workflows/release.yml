@@ -1,0 +1,25 @@
+name: Release
+
+# À chaque version publiée (Releases > Publish), joint smart_pv_router.zip pour l'installation
+# manuelle sans HACS. HACS, lui, télécharge directement le dépôt.
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  zip:
+    name: ZIP de l'intégration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Créer smart_pv_router.zip
+        run: |
+          cd custom_components/smart_pv_router
+          zip -r "$GITHUB_WORKSPACE/smart_pv_router.zip" . -x "__pycache__/*"
+      - name: Joindre le ZIP à la version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" smart_pv_router.zip --clobber

@@ -41,6 +41,46 @@ def _boost_remaining(data: dict[str, Any]) -> StateType:
     return to_int(data.get("BOOSTREM"))
 
 
+def _split_outputs(data: dict[str, Any]) -> tuple[float, float]:
+    """Part de chaque sortie dans POUT, mesure commune aux deux sorties.
+
+    Même règle que le pont MQTT → InfluxDB de SET (POUT1 / POUT2) et que l'application mobile :
+    la Sortie 1 prend jusqu'à sa charge LOAD1, le reste va à la Sortie 2 ; une Sortie 1 saturée
+    (chauffe-eau chaud) ne consomme rien ; la Sortie 2 ne compte que relais fermé (STATUS_OUT2).
+    Une charge inconnue (LOAD ≤ 0, pendant la calibration) prend toute la mesure.
+    """
+    pout = max(to_float(data.get("POUT")) or 0.0, 0.0)
+    load1 = to_float(data.get("LOAD1")) or 0.0
+    load2 = to_float(data.get("LOAD2")) or 0.0
+    if not to_bool(data.get("LOAD1_SATURED")):
+        out1 = load1 if 0 < load1 < pout else pout
+        out2 = pout - out1
+    else:
+        out1 = 0.0
+        out2 = 0.0 if to_bool(data.get("LOAD2_SATURED")) else (load2 if 0 < load2 < pout else pout)
+    if not to_bool(data.get("STATUS_OUT2")):
+        out2 = 0.0
+    return out1, out2
+
+
+def _house_power(data: dict[str, Any]) -> StateType:
+    """Maison hors chauffe-eau, Sortie 2 et borne VE (même calcul que l'application mobile).
+
+    Consommation = production + réseau (+ soutiré / − injecté) − charge de la batterie (BATT > 0),
+    ou réseau seul sans mesure de production.
+    """
+    grid = to_float(data.get("PIN"))
+    if grid is None:
+        return None
+    if "PROD" in data:
+        battery = to_float(data.get("BATT")) or 0.0
+        consumption = max((to_float(data.get("PROD")) or 0.0) + grid - battery, 0.0)
+    else:
+        consumption = max(grid, 0.0)
+    out1, out2 = _split_outputs(data)
+    return round(max(consumption - out1 - out2 - (to_float(data.get("EVPOWER")) or 0.0), 0.0))
+
+
 def _grid_alarm(data: dict[str, Any]) -> StateType:
     code = to_int(data.get("GRID_ERR"))
     return None if code is None else GRID_ALARMS.get(code)
@@ -109,6 +149,24 @@ SENSORS: tuple[SmartPVRouterSensorDescription, ...] = (
     _power("POUT", "diverted_power"),
     _power("BATT", "battery_power"),
     _power("EVPOWER", "ev_charger_power"),
+    _power(
+        "POUT1",
+        "output_1_power",
+        value_fn=lambda data: round(_split_outputs(data)[0]),
+        exists_fn=lambda data: "POUT" in data,
+    ),
+    _power(
+        "POUT2",
+        "output_2_power",
+        value_fn=lambda data: round(_split_outputs(data)[1]),
+        exists_fn=lambda data: "POUT" in data,
+    ),
+    _power(
+        "HOUSE",
+        "house_power",
+        value_fn=_house_power,
+        exists_fn=lambda data: "PIN" in data and "POUT" in data,
+    ),
     # Réseau
     SmartPVRouterSensorDescription(
         key="VIN",
@@ -166,6 +224,14 @@ SENSORS: tuple[SmartPVRouterSensorDescription, ...] = (
         options=list(GRID_ALARMS.values()),
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_grid_alarm,
+    ),
+    # Heure du routeur (« HH:MM », texte) : vérifie que son horloge est juste (heures creuses,
+    # remise à zéro des compteurs à 6 h).
+    SmartPVRouterSensorDescription(
+        key="TIME",
+        translation_key="router_time",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda data: data.get("TIME") or None,
     ),
     SmartPVRouterSensorDescription(
         key="WIFI",
