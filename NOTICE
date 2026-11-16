@@ -1,0 +1,24 @@
+Smart PV-Router by Smart Electromation Technology pour Home Assistant
+© 2026 Smart Electromation Technology
+
+Exclusions / Exclusions
+
+La licence MIT (fichier LICENSE) s'applique au code source uniquement. Ne sont PAS
+couverts par cette licence et restent © Smart Electromation Technology, tous
+droits réservés :
+- les photos de la carte : custom_components/smart_pv_router/www/scene_*.jpg ;
+- le logo et l'icône : custom_components/smart_pv_router/brand/ ;
+- les noms et marques « Smart PV-Router » et « Smart Electromation
+  Technology ».
+Toute reproduction de ces éléments est interdite sans autorisation écrite de
+Smart Electromation Technology.
+
+The MIT licence (LICENSE file) applies to the source code only. The following are NOT
+covered by this licence and remain © Smart Electromation Technology, all
+rights reserved:
+- the card pictures: custom_components/smart_pv_router/www/scene_*.jpg;
+- the logo and icon: custom_components/smart_pv_router/brand/;
+- the names and trademarks "Smart PV-Router" and "Smart Electromation
+  Technology".
+They may not be reproduced without the written permission of Smart
+Electromation Technology.

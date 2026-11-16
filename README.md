@@ -259,6 +259,12 @@ Download diagnostics).
 
 ---
 
-© 2026 Smart Electromation Technology · Code : licence [MIT](LICENSE) · Photos de la carte
-(`www/scene_*.jpg`) : © Smart Electromation Technology, tous droits réservés, hors licence MIT /
-card pictures: all rights reserved, not covered by the MIT licence.
+© 2026 Smart Electromation Technology.
+
+**Code** : licence [MIT](LICENSE). **Photos de la carte, logo, icône et marques** « Smart PV-Router »
+et « Smart Electromation Technology » : © Smart Electromation Technology, tous droits réservés, hors
+licence MIT ; toute reproduction interdite sans autorisation écrite (voir [NOTICE](NOTICE)).
+
+**Code**: [MIT](LICENSE) licence. **Card pictures, logo, icon and the "Smart PV-Router" and "Smart
+Electromation Technology" trademarks**: © Smart Electromation Technology, all rights reserved, not
+covered by the MIT licence; no reproduction without written permission (see [NOTICE](NOTICE)).
