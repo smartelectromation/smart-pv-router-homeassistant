@@ -94,6 +94,22 @@ def _router_time(data: dict[str, Any]) -> StateType:
     return f"{hours:02d}:{minutes:02d}"
 
 
+# CAR_MODE (firmware avec borne) : 0 débranchée, 1 branchée sans charge, 2 en charge,
+# 3 ventilation, 4 inconnu. Clé absente si la borne ne communique plus depuis 3 min.
+CAR_MODES = {0: "unplugged", 1: "plugged", 2: "charging", 3: "ventilation", 4: "unknown"}
+
+
+def _car_mode(data: dict[str, Any]) -> StateType:
+    code = to_int(data.get("CAR_MODE"))
+    return None if code is None else CAR_MODES.get(code)
+
+
+def _water_heater_temperature(data: dict[str, Any]) -> StateType:
+    """TEMP1 vaut 0 (ou −127) sans sonde : « inconnu » plutôt qu'une fausse mesure à 0 °C."""
+    value = to_float(data.get("TEMP1"))
+    return None if value is None or value in (0, -127) else value
+
+
 def _grid_alarm(data: dict[str, Any]) -> StateType:
     code = to_int(data.get("GRID_ERR"))
     return None if code is None else GRID_ALARMS.get(code)
@@ -216,7 +232,7 @@ SENSORS: tuple[SmartPVRouterSensorDescription, ...] = (
     _percent("AUTO_C", "self_consumption"),
     _percent("EFF", "diversion_efficiency"),
     # Températures
-    _temperature("TEMP1", "water_heater_temperature"),
+    _temperature("TEMP1", "water_heater_temperature", value_fn=_water_heater_temperature),
     _temperature("TEMP2", "probe_2_temperature"),
     # Boost
     SmartPVRouterSensorDescription(
@@ -237,6 +253,14 @@ SENSORS: tuple[SmartPVRouterSensorDescription, ...] = (
         options=list(GRID_ALARMS.values()),
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_grid_alarm,
+    ),
+    # État de la voiture, donné par la borne (firmware avec borne)
+    SmartPVRouterSensorDescription(
+        key="CAR_MODE",
+        translation_key="car_state",
+        device_class=SensorDeviceClass.ENUM,
+        options=list(CAR_MODES.values()),
+        value_fn=_car_mode,
     ),
     # Heure du routeur (« HH:MM », texte) : vérifie que son horloge est juste (heures creuses,
     # remise à zéro des compteurs à 6 h).

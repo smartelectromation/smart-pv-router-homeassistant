@@ -26,6 +26,7 @@ from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 
 from .api import SmartPVRouterApi, SmartPVRouterError
 from .const import (
+    CONF_GRAFANA_URL,
     CONF_OUTPUT_2_NAME,
     CONF_OUTPUT_2_TYPE,
     DEFAULT_HOST,
@@ -37,6 +38,7 @@ from .const import (
     ROUTER_MODEL,
     ZEROCONF_MAC_PREFIX,
     ZEROCONF_MAC_PROPERTY,
+    default_grafana_url,
 )
 
 
@@ -71,6 +73,7 @@ OPTIONS_SCHEMA = vol.Schema(
             )
         ),
         vol.Optional(CONF_OUTPUT_2_NAME): TextSelector(),
+        vol.Optional(CONF_GRAFANA_URL): TextSelector(),
     }
 )
 
@@ -84,14 +87,22 @@ class SmartPVRouterOptionsFlow(OptionsFlow):
         """Choisir le type et, si besoin, le nom de la charge de la Sortie 2."""
         if user_input is not None:
             name = (user_input.get(CONF_OUTPUT_2_NAME) or "").strip()
+            grafana = (user_input.get(CONF_GRAFANA_URL) or "").strip()
             return self.async_create_entry(
-                data={CONF_OUTPUT_2_TYPE: user_input[CONF_OUTPUT_2_TYPE], CONF_OUTPUT_2_NAME: name}
+                data={
+                    CONF_OUTPUT_2_TYPE: user_input[CONF_OUTPUT_2_TYPE],
+                    CONF_OUTPUT_2_NAME: name,
+                    CONF_GRAFANA_URL: grafana,
+                }
             )
+        # Adresse du suivi graphique proposée d'après l'adresse MAC, tant qu'aucune n'est saisie.
+        suggested = {
+            CONF_GRAFANA_URL: default_grafana_url(self.config_entry.unique_id),
+            **{key: value for key, value in self.config_entry.options.items() if value != ""},
+        }
         return self.async_show_form(
             step_id="init",
-            data_schema=self.add_suggested_values_to_schema(
-                OPTIONS_SCHEMA, self.config_entry.options
-            ),
+            data_schema=self.add_suggested_values_to_schema(OPTIONS_SCHEMA, suggested),
         )
 
 

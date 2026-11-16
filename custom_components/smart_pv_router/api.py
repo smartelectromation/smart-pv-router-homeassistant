@@ -9,7 +9,9 @@ Adresses utilisées (firmware V12_36 et suivants) :
   quand il est occupé, ``{"status": 1}`` si un réglage a été appliqué, ``{"status": 0}``
   sinon.
 
-``/getparams`` n'est pas lue : elle contient le mot de passe MQTT en clair.
+``/getparams`` n'est jamais lue telle quelle : elle contient le mot de passe MQTT en clair. Avec
+``API`` ≥ 2, ``/getparams?pwd=0`` répond sans ``Login`` ni ``Passwd`` ; seules les clés de
+``SETTINGS_KEYS`` en sont gardées.
 """
 
 from __future__ import annotations
@@ -18,6 +20,8 @@ import asyncio
 from typing import Any
 
 import aiohttp
+
+from .const import SETTINGS_KEYS
 
 REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=10)
 REST_ATTEMPTS = 3
@@ -67,6 +71,26 @@ class SmartPVRouterApi:
         if not isinstance(data, dict):
             raise SmartPVRouterConnectionError("réponse /getjson inattendue")
         return data
+
+    async def async_get_settings(self) -> dict[str, Any]:
+        """Réglages du routeur, lus dans /getparams?pwd=0.
+
+        À n'appeler qu'avec ``API`` ≥ 2 : un firmware plus ancien ignore ``pwd=0`` et renverrait le
+        mot de passe MQTT. Par précaution, seules les clés de ``SETTINGS_KEYS`` sont gardées ; le
+        reste de la réponse n'est ni conservé ni journalisé.
+        """
+        async with self._lock:
+            try:
+                async with self._session.get(
+                    f"{self.base_url}/getparams", params={"pwd": "0"}, timeout=REQUEST_TIMEOUT
+                ) as resp:
+                    resp.raise_for_status()
+                    raw = await resp.json(content_type=None)
+            except (aiohttp.ClientError, TimeoutError, ValueError) as err:
+                raise SmartPVRouterConnectionError(str(err) or repr(err)) from err
+        if not isinstance(raw, dict):
+            raise SmartPVRouterConnectionError("réponse /getparams inattendue")
+        return {key: raw[key] for key in SETTINGS_KEYS if key in raw}
 
     async def async_command(self, key: str, value: str) -> str:
         """Envoyer une commande /get?key=value."""

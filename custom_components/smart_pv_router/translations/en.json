@@ -35,7 +35,8 @@
         "description": "Appliance connected to Output 2: it sets the icon and name shown on the Smart PV-Router card.",
         "data": {
           "output_2_type": "Load type",
-          "output_2_name": "Name (optional)"
+          "output_2_name": "Name (optional)",
+            "grafana_url": "Online charts (address)"
         },
         "data_description": {
           "output_2_name": "Leave empty to use the type name."
@@ -72,8 +73,11 @@
       "calibrate_output_2": { "name": "Calibrate output 2" }
     },
     "number": {
-      "night_setpoint": { "name": "Night setpoint" },
+      "night_setpoint": { "name": "Night heating temperature" },
       "boost_duration": { "name": "Boost duration" },
+      "auto_threshold": { "name": "Auto threshold" },
+      "load_shedding_power": { "name": "Load shedding power" },
+      "dimmer_target": { "name": "Dimmer target" },
       "manual_dimmer_1": { "name": "Manual dimmer output 1" },
       "manual_dimmer_2": { "name": "Manual dimmer output 2" }
     },
@@ -121,6 +125,16 @@
       "self_consumption": { "name": "Self-consumption today" },
       "diversion_efficiency": { "name": "Diversion efficiency" },
       "water_heater_temperature": { "name": "Water heater temperature" },
+      "car_state": {
+        "name": "Car state",
+        "state": {
+          "unplugged": "Unplugged",
+          "plugged": "Plugged in",
+          "charging": "Charging",
+          "ventilation": "Ventilation",
+          "unknown": "Unknown"
+        }
+      },
       "probe_2_temperature": { "name": "Probe 2 temperature" },
       "boost_remaining": { "name": "Boost remaining" },
       "output_1_load": { "name": "Output 1 load" },
@@ -140,7 +154,14 @@
     "switch": {
       "boost": { "name": "Boost" },
       "ecomax": { "name": "EcoMax" },
-      "display": { "name": "Display" }
+      "display": { "name": "Display" },
+      "relaunch_output_2": { "name": "Output 2 night heating from grid" }
+    },
+    "time": {
+      "time_slot_1_start": { "name": "Time slot 1 start" },
+      "time_slot_1_end": { "name": "Time slot 1 end" },
+      "time_slot_2_start": { "name": "Time slot 2 start" },
+      "time_slot_2_end": { "name": "Time slot 2 end" }
     }
   },
   "exceptions": {

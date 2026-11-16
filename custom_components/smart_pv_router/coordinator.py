@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -9,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import SmartPVRouterApi, SmartPVRouterError
-from .const import DOMAIN, LOGGER, SCAN_INTERVAL
+from .const import API_SETTINGS, DOMAIN, LOGGER, SCAN_INTERVAL, SETTINGS_INTERVAL_S
 
 type SmartPVRouterConfigEntry = ConfigEntry[SmartPVRouterCoordinator]
 
@@ -34,6 +35,9 @@ class SmartPVRouterCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             update_interval=SCAN_INTERVAL,
         )
         self.api = api
+        # Réglages de /getparams?pwd=0 (API ≥ 2), ajoutés aux données de /getjson.
+        self._settings: dict[str, Any] = {}
+        self._settings_at = 0.0
 
     @property
     def api_version(self) -> int:
@@ -47,9 +51,26 @@ class SmartPVRouterCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             return 0
         return value
 
+    def async_refresh_settings_soon(self) -> None:
+        """Relire les réglages à la prochaine lecture (après un changement)."""
+        self._settings_at = 0.0
+
     async def _async_update_data(self) -> dict[str, Any]:
-        """Lire /getjson."""
+        """Lire /getjson, et les réglages toutes les 60 s si le firmware le permet (API ≥ 2)."""
         try:
-            return await self.api.async_get_json()
+            data = await self.api.async_get_json()
         except SmartPVRouterError as err:
             raise UpdateFailed(f"Smart PV-Router injoignable : {err}") from err
+        api = data.get("API")
+        if isinstance(api, int) and not isinstance(api, bool) and api >= API_SETTINGS:
+            now = time.monotonic()
+            if now - self._settings_at >= SETTINGS_INTERVAL_S:
+                try:
+                    self._settings = await self.api.async_get_settings()
+                    self._settings_at = now
+                except SmartPVRouterError as err:
+                    LOGGER.debug("Réglages non relus : %s", err)
+        else:
+            self._settings = {}
+        # /getjson l'emporte pour les clés communes.
+        return {**self._settings, **data}

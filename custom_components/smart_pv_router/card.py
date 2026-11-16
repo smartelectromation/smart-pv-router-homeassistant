@@ -23,6 +23,7 @@ from homeassistant.helpers import device_registry as dr, entity_registry as er
 
 from .const import (
     CARD_FILE,
+    CONF_GRAFANA_URL,
     CONF_OUTPUT_2_NAME,
     CONF_OUTPUT_2_TYPE,
     DEFAULT_OUTPUT_2_TYPE,
@@ -35,6 +36,7 @@ from .const import (
     PANEL_ICON,
     PANEL_TITLE,
     PANEL_URL,
+    default_grafana_url,
 )
 
 WWW_DIR = Path(__file__).parent / "www"
@@ -141,6 +143,9 @@ def websocket_routers(
                     "name": entry.options.get(CONF_OUTPUT_2_NAME, ""),
                 },
                 "output_2_types": OUTPUT_2_TYPES,
+                # Suivi graphique : adresse saisie dans les options, sinon celle du routeur.
+                "grafana_url": entry.options.get(CONF_GRAFANA_URL)
+                or default_grafana_url(entry.unique_id),
             }
         )
     connection.send_result(msg["id"], {"routers": routers})

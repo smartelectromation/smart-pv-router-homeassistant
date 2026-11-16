@@ -32,6 +32,9 @@
     "number": {
       "night_setpoint": { "default": "mdi:thermostat" },
       "boost_duration": { "default": "mdi:timer-cog-outline" },
+      "auto_threshold": { "default": "mdi:percent-circle-outline" },
+      "load_shedding_power": { "default": "mdi:transmission-tower-off" },
+      "dimmer_target": { "default": "mdi:target" },
       "manual_dimmer_1": { "default": "mdi:knob" },
       "manual_dimmer_2": { "default": "mdi:knob" }
     },
@@ -81,6 +84,15 @@
       "output_1_load": { "default": "mdi:heating-coil" },
       "output_2_load": { "default": "mdi:heating-coil" },
       "router_time": { "default": "mdi:clock-outline" },
+      "car_state": {
+        "default": "mdi:car-electric",
+        "state": {
+          "unplugged": "mdi:car-off",
+          "plugged": "mdi:car-electric-outline",
+          "charging": "mdi:car-electric",
+          "ventilation": "mdi:fan-alert"
+        }
+      },
       "grid_alarm": {
         "default": "mdi:transmission-tower",
         "state": {
@@ -102,7 +114,14 @@
       "display": {
         "default": "mdi:monitor",
         "state": { "on": "mdi:monitor", "off": "mdi:monitor-off" }
-      }
+      },
+      "relaunch_output_2": { "default": "mdi:link-variant" }
+    },
+    "time": {
+      "time_slot_1_start": { "default": "mdi:clock-start" },
+      "time_slot_1_end": { "default": "mdi:clock-end" },
+      "time_slot_2_start": { "default": "mdi:clock-start" },
+      "time_slot_2_end": { "default": "mdi:clock-end" }
     }
   }
 }

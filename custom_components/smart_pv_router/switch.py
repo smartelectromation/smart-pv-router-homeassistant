@@ -46,6 +46,17 @@ SWITCHES: tuple[SmartPVRouterSwitchDescription, ...] = (
         min_api=API_ON_OFF_COMMANDS,
         entity_category=EntityCategory.CONFIG,
     ),
+    # « Relance Réseau S2 » de la page Système (option NIGHT_OUT2 du firmware) : pendant la plage
+    # horaire, la Sortie 2 est aussi chauffée par le réseau, comme la Sortie 1, jusqu'à saturation de
+    # sa charge et dans la limite de la puissance de délestage. Désactivée : seule la Sortie 1 est
+    # relancée. Lue dans /getparams?pwd=0 (API ≥ 2), réglée par /get?NIGHT_OUT2=1|0.
+    SmartPVRouterSwitchDescription(
+        key="NIGHT_OUT2",
+        translation_key="relaunch_output_2",
+        command="NIGHT_OUT2",
+        min_api=2,
+        entity_category=EntityCategory.CONFIG,
+    ),
 )
 
 
@@ -91,7 +102,11 @@ class SmartPVRouterSwitch(SmartPVRouterEntity, SwitchEntity):
         api = self.coordinator.api
         description = self.entity_description
         try:
-            if self.coordinator.api_version >= API_ON_OFF_COMMANDS:
+            if description.key == "NIGHT_OUT2":
+                # Réglage (1 / 0), pas une commande ON / OFF ; relu dans /getparams?pwd=0.
+                await api.async_command(description.command, "1" if on else "0")
+                self.coordinator.async_refresh_settings_soon()
+            elif self.coordinator.api_version >= API_ON_OFF_COMMANDS:
                 await api.async_command(description.command, "ON" if on else "OFF")
             else:
                 data = await api.async_get_json()

@@ -35,7 +35,8 @@
         "description": "Appareil branché sur la Sortie 2 : il donne l'icône et le nom affichés sur la carte Smart PV-Router.",
         "data": {
           "output_2_type": "Type de charge",
-          "output_2_name": "Nom (facultatif)"
+          "output_2_name": "Nom (facultatif)",
+            "grafana_url": "Suivi graphique (adresse)"
         },
         "data_description": {
           "output_2_name": "Laisser vide pour utiliser le nom du type."
@@ -72,8 +73,11 @@
       "calibrate_output_2": { "name": "Calibrer la Sortie 2" }
     },
     "number": {
-      "night_setpoint": { "name": "Consigne de nuit" },
+      "night_setpoint": { "name": "Température de relance" },
       "boost_duration": { "name": "Durée du Boost" },
+      "auto_threshold": { "name": "Seuil Auto" },
+      "load_shedding_power": { "name": "Puissance de délestage" },
+      "dimmer_target": { "name": "Cible Modulation" },
       "manual_dimmer_1": { "name": "Gradation manuelle Sortie 1" },
       "manual_dimmer_2": { "name": "Gradation manuelle Sortie 2" }
     },
@@ -120,7 +124,17 @@
       "self_sufficiency": { "name": "Autoproduction du jour" },
       "self_consumption": { "name": "Autoconsommation du jour" },
       "diversion_efficiency": { "name": "Rendement du routage" },
-      "water_heater_temperature": { "name": "Température du ballon" },
+      "water_heater_temperature": { "name": "Température du chauffe-eau" },
+      "car_state": {
+        "name": "État de la voiture",
+        "state": {
+          "unplugged": "Débranchée",
+          "plugged": "Branchée",
+          "charging": "En charge",
+          "ventilation": "Ventilation",
+          "unknown": "Inconnu"
+        }
+      },
       "probe_2_temperature": { "name": "Température sonde 2" },
       "boost_remaining": { "name": "Boost restant" },
       "output_1_load": { "name": "Charge Sortie 1" },
@@ -140,7 +154,14 @@
     "switch": {
       "boost": { "name": "Boost" },
       "ecomax": { "name": "EcoMax" },
-      "display": { "name": "Écran" }
+      "display": { "name": "Écran" },
+      "relaunch_output_2": { "name": "Relance réseau Sortie 2" }
+    },
+    "time": {
+      "time_slot_1_start": { "name": "Plage horaire 1 : début" },
+      "time_slot_1_end": { "name": "Plage horaire 1 : fin" },
+      "time_slot_2_start": { "name": "Plage horaire 2 : début" },
+      "time_slot_2_end": { "name": "Plage horaire 2 : fin" }
     }
   },
   "exceptions": {

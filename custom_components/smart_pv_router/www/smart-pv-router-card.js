@@ -10,7 +10,7 @@
  * elle n'adresse jamais le routeur directement.
  */
 
-const CARD_VERSION = "0.2.0";
+const CARD_VERSION = "0.3.0";
 const CARD_BASE = "/smart_pv_router_card";
 const DOMAIN = "smart_pv_router";
 const ACTIVE_W = 30; // En dessous, pas de flux affiché (comme l'application).
@@ -47,7 +47,8 @@ const TEXT = {
     solar: "Solaire", grid: "Réseau", import: "Soutirage", export: "Injection", house: "Maison",
     water_heater: "Chauffe-eau", hot: "Chaud", output_2: "Sortie 2", output_1: "Sortie 1",
     stopped: "Arrêt", waiting: "Attente", battery: "Batterie", standby: "Veille", car: "Voiture",
-    charger: "Borne", no_car: "Pas de charge", st_on: "Marche", st_sat: "Saturée", pick_type: "Choisir la charge de la Sortie 2",
+    charger: "Borne", no_car: "Pas de charge", charts: "Suivi graphique", settings: "Réglages", car_unplugged: "Débranchée", car_plugged: "Branchée",
+    car_ventilation: "Ventilation", st_on: "Marche", st_sat: "Saturée", pick_type: "Choisir la charge de la Sortie 2",
     types: { other: "Sortie 2", radiator: "Radiateur", pool: "Piscine", hot_tub: "Spa / jacuzzi",
       ev: "Voiture (Green'Up)", heat_pump: "Pompe à chaleur", water_heater: "Chauffe-eau 2",
       air_conditioner: "Climatisation", socket: "Prise" },
@@ -65,7 +66,8 @@ const TEXT = {
     solar: "Solar", grid: "Grid", import: "Import", export: "Export", house: "House",
     water_heater: "Water heater", hot: "Hot", output_2: "Output 2", output_1: "Output 1",
     stopped: "Off", waiting: "Waiting", battery: "Battery", standby: "Standby", car: "Car",
-    charger: "Charger", no_car: "Not charging", st_on: "On", st_sat: "Saturated", pick_type: "Choose the Output 2 load",
+    charger: "Charger", no_car: "Not charging", charts: "Online charts", settings: "Settings", car_unplugged: "Unplugged", car_plugged: "Plugged in",
+    car_ventilation: "Ventilation", st_on: "On", st_sat: "Saturated", pick_type: "Choose the Output 2 load",
     types: { other: "Output 2", radiator: "Radiator", pool: "Pool", hot_tub: "Hot tub",
       ev: "Car (Green'Up)", heat_pump: "Heat pump", water_heater: "Water heater 2",
       air_conditioner: "Air conditioning", socket: "Socket" },
@@ -83,7 +85,8 @@ const TEXT = {
     solar: "Solar", grid: "Netz", import: "Bezug", export: "Einspeisung", house: "Haus",
     water_heater: "Warmwasser", hot: "Heiß", output_2: "Ausgang 2", output_1: "Ausgang 1",
     stopped: "Aus", waiting: "Wartet", battery: "Batterie", standby: "Standby", car: "Auto",
-    charger: "Wallbox", no_car: "Lädt nicht", st_on: "Ein", st_sat: "Gesättigt", pick_type: "Verbraucher an Ausgang 2 wählen",
+    charger: "Wallbox", no_car: "Lädt nicht", charts: "Online-Diagramme", settings: "Einstellungen", car_unplugged: "Abgesteckt", car_plugged: "Angesteckt",
+    car_ventilation: "Lüftung", st_on: "Ein", st_sat: "Gesättigt", pick_type: "Verbraucher an Ausgang 2 wählen",
     types: { other: "Ausgang 2", radiator: "Heizkörper", pool: "Pool", hot_tub: "Whirlpool",
       ev: "Auto (Green'Up)", heat_pump: "Wärmepumpe", water_heater: "Warmwasser 2",
       air_conditioner: "Klimaanlage", socket: "Steckdose" },
@@ -106,7 +109,7 @@ const KEYS = [
   "PIN", "PROD", "POUT", "POUT1", "POUT2", "HOUSE", "BATT", "EVPOWER", "LOAD2", "TEMP1",
   "BOOSTREM", "GRID_ERR", "STATUS_OUT1", "STATUS_OUT2", "LOAD1_SATURED", "LOAD2_SATURED", "NIGHT", "Out1_mode", "Out2_mode",
   "BOOST", "ECOMAX", "BOOSTTIME", "TOT_PROD", "TOT_S", "INJECT", "TOTAL_POWER", "AUTO_C", "SUFFI",
-  "EFF", "TIME",
+  "EFF", "TIME", "CAR_MODE",
 ];
 
 // Bilan du jour (compteurs du routeur, remis à zéro à 6 h) : clé, texte, icône, couleur, unité.
@@ -156,6 +159,12 @@ const STYLE = `
   .today[hidden] { display: none; }
   .today-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 8px; }
   .today-title { font-size: .95em; font-weight: 600; }
+  .charts { display: inline-flex; align-items: center; gap: 4px; font-size: .8em; font-weight: 600;
+    padding: 3px 10px; border-radius: 999px; text-decoration: none; color: ${COLORS.grid};
+    border: 1px solid ${COLORS.grid}66; }
+  .charts[hidden] { display: none; }
+  .charts.settings { color: var(--secondary-text-color); border-color: var(--divider-color); cursor: pointer; }
+  .charts ha-icon { --mdc-icon-size: 16px; }
   .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
   @container pvr (max-width: 400px) { .side .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   /* Très petit écran : une valeur par ligne, libellés entiers */
@@ -445,7 +454,7 @@ class SmartPVRouterCard extends HTMLElement {
     this._entities = router.entities || {};
     this._routerEntry = router;
     const o2 = router.output_2 || {};
-    const builtFor = `${router.device_id}|${lang}|${o2.type}|${o2.name}`;
+    const builtFor = `${router.device_id}|${lang}|${o2.type}|${o2.name}|${router.grafana_url}`;
     if (this._built !== builtFor) this._build(t, builtFor);
     const sig = KEYS.map((k) => {
       const s = this._state(k);
@@ -482,9 +491,13 @@ class SmartPVRouterCard extends HTMLElement {
         <div class="side">
         <div class="today" id="today" hidden>
           <div class="today-head"><span class="today-title"></span>
+            <a class="charts" id="charts" target="_blank" rel="noopener noreferrer" hidden>
+              <ha-icon icon="mdi:chart-line"></ha-icon><span></span></a>
             <span class="badges">
               <span class="badge alarm" id="b-alarm" hidden></span>
               <span class="badge night" id="b-night" hidden></span>
+              <a class="charts settings" id="settings" hidden>
+                <ha-icon icon="mdi:cog-outline"></ha-icon><span></span></a>
               <span class="badge time" id="b-time" hidden><ha-icon icon="mdi:clock-outline"></ha-icon><span></span></span>
             </span>
           </div>
@@ -572,6 +585,27 @@ class SmartPVRouterCard extends HTMLElement {
     $("#bo-dur-label").textContent = t.duration;
     $("#bo-unit").textContent = t.min;
     $(".today-title").textContent = t.today;
+    // Suivi graphique (Grafana SET) : nouvel onglet, adresse donnée par l'intégration.
+    const charts = $("#charts");
+    const url = this._routerEntry && this._routerEntry.grafana_url;
+    charts.hidden = !url || !/^https?:\/\//.test(url);
+    if (!charts.hidden) charts.href = url;
+    charts.querySelector("span").textContent = t.charts;
+    // Réglages : fiche de l'appareil (carte Configuration), réservée aux administrateurs. Retour à la
+    // maison par l'entrée « Smart PV-Router » de la barre latérale.
+    const settings = $("#settings");
+    const deviceId = this._routerEntry && this._routerEntry.device_id;
+    settings.hidden = !deviceId || !(this._hass.user && this._hass.user.is_admin);
+    settings.querySelector("span").textContent = t.settings;
+    if (!settings.hidden) {
+      const path = `/config/devices/device/${deviceId}`;
+      settings.href = path;
+      settings.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        history.pushState(null, "", path);
+        window.dispatchEvent(new CustomEvent("location-changed", { detail: { replace: false } }));
+      });
+    }
     for (const [key, label, , color] of STATS) {
       $(`#s-${key} .lab`).textContent = t[label];
       $(`#s-${key} ha-icon`).style.color = COLORS[color];
@@ -642,8 +676,13 @@ class SmartPVRouterCard extends HTMLElement {
     // La voiture n'est dans le garage (ouvert) que pendant une charge : /getjson ne dit pas si elle
     // est branchée, seule la puissance de la borne le montre. Sinon, garage fermé.
     const charging = hasEv && val("EVPOWER") > ACTIVE_W;
+    // Voiture au garage (ouvert) : branchée ou en charge selon CAR_MODE, donné par la borne. Sans
+    // cette clé (ancien firmware, borne muette depuis 3 min), seule une charge en cours le montre.
+    const carState = this._state("CAR_MODE");
+    const car = carState && !["unknown", "unavailable"].includes(carState.state) ? carState.state : null;
+    const carHere = car ? ["plugged", "charging"].includes(car) : charging;
     $(".scene").style.backgroundImage =
-      `url("${CARD_BASE}/${SCENES[`${hasBatt},${charging}`]}?v=${CARD_VERSION}")`;
+      `url("${CARD_BASE}/${SCENES[`${hasBatt},${hasEv && carHere}`]}?v=${CARD_VERSION}")`;
 
     // Flux : (puissance, vers le routeur, affiché)
     const pv = val("PROD");
@@ -657,7 +696,7 @@ class SmartPVRouterCard extends HTMLElement {
     this._flow("ecs", ecs, false, true);
     this._flow("out2", out2, false, showOut2);
     this._flow("batt", Math.abs(batt), batt < 0, hasBatt);
-    this._flow("ev", ev, false, charging);
+    this._flow("ev", ev, false, charging && carHere);
 
     // Pastilles
     if (hasProd) this._chip("pv", "mdi:white-balance-sunny", COLORS.pv, t.solar, power(pv));
@@ -708,9 +747,15 @@ class SmartPVRouterCard extends HTMLElement {
       this._chip("batt", icon, COLORS.batt, t.battery,
         Math.abs(batt) > ACTIVE_W ? power(Math.abs(batt)) : t.standby);
     } else this._hide("batt");
-    if (charging) this._chip("ev", "mdi:car-electric", COLORS.ev, t.car, power(ev));
-    else if (hasEv) this._chip("ev", "mdi:ev-station", COLORS.muted, t.charger, t.no_car);
-    else this._hide("ev");
+    if (!hasEv) this._hide("ev");
+    else if (charging && carHere) this._chip("ev", "mdi:car-electric", COLORS.ev, t.car, power(ev));
+    else if (car === "plugged") {
+      this._chip("ev", "mdi:car-electric-outline", COLORS.ev, t.car, t.car_plugged, false, COLORS.muted);
+    } else if (car === "unplugged") {
+      this._chip("ev", "mdi:ev-station", COLORS.ev, t.charger, t.car_unplugged, false, COLORS.muted);
+    } else if (car === "ventilation") {
+      this._chip("ev", "mdi:fan-alert", COLORS.ev, t.charger, t.car_ventilation, false, COLORS.sat);
+    } else this._chip("ev", "mdi:ev-station", COLORS.ev, t.charger, t.no_car, false, COLORS.muted);
 
     // Modes des sorties, EcoMax, nuit, alarme
     this._updateMode("#m-out1", "#k-out1", "Out1_mode");

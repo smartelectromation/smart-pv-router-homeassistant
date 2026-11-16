@@ -58,14 +58,20 @@ Les mises à jour ne sont alors pas proposées : il faut refaire la copie à cha
 |---|---|
 | Puissances | réseau (+ soutirée / − injectée), injectée, production solaire, routée, Sortie 1, Sortie 2, maison, batterie, borne VE |
 | Énergies du jour (kWh) | soutirée au réseau, injectée au réseau, solaire produite, routée, solaire routée |
-| Autres mesures | tension, courants, autoproduction et autoconsommation du jour, rendement du routage, température du ballon, Boost restant |
+| Autres mesures | tension, courants, autoproduction et autoconsommation du jour, rendement du routage, température du chauffe-eau, Boost restant, état de la voiture, heure du routeur |
 | États | Sortie 1 / Sortie 2 active, charge saturée, période de nuit, cycle anti-bactéries |
-| Commandes | mode de la Sortie 1 et de la Sortie 2 (Arrêt, Automatique, Marche forcée, Gradation, Gradation manuelle), Boost, durée du Boost, EcoMax, consigne de nuit, écran |
+| Commandes | mode de la Sortie 1 et de la Sortie 2 (Arrêt, Automatique, Marche forcée, Gradation, Gradation manuelle), Boost, EcoMax |
+| Configuration | durée du Boost, écran, température de relance, plages horaires 1 et 2 (début, fin), puissance de délestage, Seuil Auto, Cible Modulation, relance réseau Sortie 2 |
 | Désactivées par défaut | signal WiFi, température RTC, MQTT connecté, redémarrage, calibration de la Sortie 2, gradation manuelle Sortie 1 / Sortie 2 |
 
 Seules les entités que le firmware fournit sont créées : certaines dépendent des options du routeur
-(production, batterie, borne VE, sondes de température, EcoMax). La durée du Boost et l'écran demandent
-un firmware qui annonce la version de son API (clé `API` de `/getjson`).
+(production, batterie, borne VE, sonde de température, EcoMax, 2e plage horaire). La durée du Boost et
+l'écran demandent un firmware qui annonce la version de son API (clé `API` de `/getjson`) ; les plages
+horaires, le délestage, le Seuil Auto, la Cible Modulation et la relance réseau Sortie 2 demandent
+`API` 2 ou plus. Sans sonde, la température du chauffe-eau est « inconnue ».
+
+Les réglages sont dans la fiche de l'appareil, carte **Configuration** : bouton **Réglages** de la page
+Smart PV-Router (administrateurs), ou Paramètres > Appareils et services > Smart PV-Router.
 
 ### Carte Smart PV-Router
 
@@ -75,7 +81,10 @@ mettre aussi dans un de vos tableaux de bord : **Modifier** > **Ajouter une cart
 - Photo de la maison, avec la batterie et la voiture si le routeur les mesure.
 - Flux d'énergie animés entre le routeur et le solaire, le réseau, le chauffe-eau, la Sortie 2, la
   batterie et la borne VE ; pastilles avec la puissance de chacun.
-- Mode de chaque sortie, EcoMax, Boost et sa durée, directement sur la carte.
+- Mode et état de chaque sortie (voyant Arrêt / Marche / Saturée), EcoMax, Boost et sa durée,
+  directement sur la carte.
+- Boutons **Suivi graphique** (tableau de bord en ligne Smart Electromation Technology, adresse
+  modifiable dans Configurer) et **Réglages**.
 - **Charge de la Sortie 2** au choix (radiateur, piscine, spa, voiture Green'Up, pompe à chaleur,
   second chauffe-eau, climatisation, prise) : clic sur « Sortie 2 » sous la photo, ou Paramètres >
   Appareils et services > Smart PV-Router > **Configurer**. L'icône et le nom suivent partout.
@@ -177,14 +186,20 @@ Updates are then not offered: copy it again for each release.
 |---|---|
 | Power | grid (+ import / − export), export, solar, diverted, Output 1, Output 2, house, battery, EV charger |
 | Daily energy (kWh) | grid import, grid export, solar, diverted, solar diverted |
-| Other measurements | voltage, currents, self-sufficiency and self-consumption today, diversion efficiency, water heater temperature, Boost remaining |
+| Other measurements | voltage, currents, self-sufficiency and self-consumption today, diversion efficiency, water heater temperature, Boost remaining, car state, router time |
 | States | Output 1 / Output 2 active, load saturated, night period, anti-bacteria cycle |
-| Controls | Output 1 and Output 2 mode (Off, Automatic, Forced on, Dimmer, Manual dimmer), Boost, Boost duration, EcoMax, night setpoint, display |
+| Controls | Output 1 and Output 2 mode (Off, Automatic, Forced on, Dimmer, Manual dimmer), Boost, EcoMax |
+| Configuration | Boost duration, display, night heating temperature, time slots 1 and 2 (start, end), load shedding power, auto threshold, dimmer target, Output 2 night heating from grid |
 | Disabled by default | WiFi signal, RTC temperature, MQTT connected, restart, Output 2 calibration, manual dimmer Output 1 / Output 2 |
 
 Only the entities provided by the firmware are created: some depend on the router's options
-(production, battery, EV charger, temperature probes, EcoMax). Boost duration and display need a
-firmware that reports its API version (`API` key in `/getjson`).
+(production, battery, EV charger, temperature probe, EcoMax, second time slot). Boost duration and
+display need a firmware that reports its API version (`API` key in `/getjson`); time slots, load
+shedding, auto threshold, dimmer target and Output 2 night heating need `API` 2 or later. Without a
+probe, the water heater temperature is "unknown".
+
+Settings are on the device page, **Configuration** card: **Settings** button on the Smart PV-Router
+page (administrators), or Settings > Devices & services > Smart PV-Router.
 
 ### Smart PV-Router card
 
@@ -194,7 +209,10 @@ your dashboards: **Edit** > **Add card** > "Smart PV-Router".
 - Picture of the house, with the battery and the car if the router measures them.
 - Animated energy flows between the router and the solar panels, the grid, the water heater, Output 2,
   the battery and the EV charger; a chip with the power of each.
-- Mode of each output, EcoMax, Boost and its duration, right on the card.
+- Mode and state of each output (Off / On / Saturated light), EcoMax, Boost and its duration,
+  right on the card.
+- **Online charts** button (Smart Electromation Technology online dashboard, address editable in
+  Configure) and **Settings** button.
 - **Output 2 load** of your choice (radiator, pool, hot tub, Green'Up car, heat pump, second water
   heater, air conditioning, socket): click "Output 2" below the picture, or Settings > Devices &
   services > Smart PV-Router > **Configure**. The icon and name follow everywhere.

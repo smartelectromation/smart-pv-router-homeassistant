@@ -11,7 +11,14 @@ from homeassistant.components.number import (
     NumberMode,
     RestoreNumber,
 )
-from homeassistant.const import PERCENTAGE, EntityCategory, UnitOfTemperature, UnitOfTime
+from homeassistant.const import (
+    PERCENTAGE,
+    EntityCategory,
+    UnitOfApparentPower,
+    UnitOfPower,
+    UnitOfTemperature,
+    UnitOfTime,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -55,6 +62,48 @@ SETTINGS: tuple[SmartPVRouterNumberDescription, ...] = (
         native_unit_of_measurement=UnitOfTime.MINUTES,
         native_min_value=1,
         native_max_value=1440,
+        native_step=1,
+        mode=NumberMode.BOX,
+        entity_category=EntityCategory.CONFIG,
+    ),
+    # Réglages lus dans /getparams?pwd=0 (firmware avec API ≥ 2). Le routeur ignore sans erreur une
+    # valeur hors bornes : l'entité affiche toujours la valeur relue après le réglage.
+    # Seuil Auto (%) : 0 à 100.
+    SmartPVRouterNumberDescription(
+        key="THPERCENTAGE",
+        read_key="THPERCENTAGE",
+        translation_key="auto_threshold",
+        native_unit_of_measurement=PERCENTAGE,
+        native_min_value=0,
+        native_max_value=100,
+        native_step=1,
+        mode=NumberMode.BOX,
+        entity_category=EntityCategory.CONFIG,
+    ),
+    # Délestage, puissance MAX (VA) : entier > 0 ; plafond 12 000 ou 30 000 VA selon le firmware
+    # (au-delà, le routeur ramène au plafond).
+    SmartPVRouterNumberDescription(
+        key="OVERLOAD",
+        read_key="OVERLOAD",
+        translation_key="load_shedding_power",
+        device_class=NumberDeviceClass.APPARENT_POWER,
+        native_unit_of_measurement=UnitOfApparentPower.VOLT_AMPERE,
+        native_min_value=1,
+        native_max_value=30000,
+        native_step=1,
+        mode=NumberMode.BOX,
+        entity_category=EntityCategory.CONFIG,
+    ),
+    # Cible Modul (W) : −9999 à +9999 (négatif autorisé). Réglable seulement avec l'option
+    # gradateur du firmware.
+    SmartPVRouterNumberDescription(
+        key="THDIMMER",
+        read_key="THDIMMER",
+        translation_key="dimmer_target",
+        device_class=NumberDeviceClass.POWER,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        native_min_value=-9999,
+        native_max_value=9999,
         native_step=1,
         mode=NumberMode.BOX,
         entity_category=EntityCategory.CONFIG,
@@ -130,6 +179,7 @@ class SmartPVRouterSetting(SmartPVRouterEntity, NumberEntity):
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="command_failed"
             ) from err
+        self.coordinator.async_refresh_settings_soon()
         await self.coordinator.async_request_refresh()
 
 
