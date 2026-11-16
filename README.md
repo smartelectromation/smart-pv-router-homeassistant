@@ -21,10 +21,10 @@ tableau de bord en ligne (Grafana) et le suivi par smartelectromation.com resten
 
 ### Installation
 
-[![Ouvrir dans HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=smartelectromation&repository=smart-pv-router-homeassistant&category=integration)
+[![Ouvrir dans la Marketplace](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=smartelectromation&repository=smart-pv-router-homeassistant&category=integration)
 
-1. Cliquez sur le bouton ci-dessus : HACS s'ouvre dans votre Home Assistant, sur cette intégration.
-   Cliquez sur **Télécharger**, puis redémarrez Home Assistant (Paramètres > Système > Redémarrer).
+1. Cliquez sur le bouton ci-dessus : la **Marketplace** de votre Home Assistant s'ouvre sur cette
+   intégration. Cliquez sur **Installer**, puis sur **Redémarrer Home Assistant**.
 2. Le routeur est **découvert tout seul** : Paramètres > Appareils et services > **Configurer**.
 3. C'est tout : **« Smart PV-Router » apparaît dans la barre latérale**, avec la maison animée.
 
@@ -34,16 +34,30 @@ Si le routeur n'est pas découvert :
 
 puis saisissez `pvrouter.local` ou l'adresse IP du routeur.
 
-<details>
-<summary>Sans le bouton : ajout à la main dans HACS</summary>
+**Première installation par la Marketplace** : Home Assistant affiche d'abord un avertissement sur les
+éléments créés par la communauté (à accepter), puis demande de connecter la Marketplace à un compte
+GitHub (gratuit) : saisissez le code affiché sur [github.com/login/device](https://github.com/login/device)
+et validez. Cette connexion est demandée pour tout dépôt ajouté par lien, tant qu'il n'est pas dans le
+catalogue de la Marketplace ; elle ne donne ni accès aux dépôts privés ni droit de modification.
 
-HACS > menu **⋮** > **Dépôts personnalisés** > adresse
-`https://github.com/smartelectromation/smart-pv-router-homeassistant`, catégorie **Intégration**, puis
-**Télécharger**.
+<details>
+<summary>Sans le bouton : ajout à la main dans la Marketplace</summary>
+
+Paramètres > **Marketplace** > icône de lien (à droite de la recherche) : fenêtre **Ajouter grâce à un
+lien GitHub** > adresse
+`https://github.com/smartelectromation/smart-pv-router-homeassistant` > **Ajouter**, puis **Installer**.
 </details>
 
 <details>
-<summary>Sans HACS : installation manuelle</summary>
+<summary>Home Assistant antérieur à 2026.11 : HACS</summary>
+
+Avant la version 2026.11, la Marketplace n'existe pas : le bouton ci-dessus ouvre HACS. Cliquez sur
+**Télécharger**, puis redémarrez Home Assistant. Sans le bouton : HACS > menu **⋮** > **Dépôts
+personnalisés** > adresse du dépôt, catégorie **Intégration**, puis **Télécharger**.
+</details>
+
+<details>
+<summary>Sans Marketplace ni HACS : installation manuelle</summary>
 
 1. Téléchargez `smart_pv_router.zip` dans la [dernière version](https://github.com/smartelectromation/smart-pv-router-homeassistant/releases/latest).
 2. Décompressez-le dans `config/custom_components/smart_pv_router/` (avec le module complémentaire
@@ -149,10 +163,10 @@ dashboard (Grafana) and the follow-up by smartelectromation.com remain available
 
 ### Installation
 
-[![Open in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=smartelectromation&repository=smart-pv-router-homeassistant&category=integration)
+[![Open in the Marketplace](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=smartelectromation&repository=smart-pv-router-homeassistant&category=integration)
 
-1. Click the button above: HACS opens in your Home Assistant, on this integration. Click
-   **Download**, then restart Home Assistant (Settings > System > Restart).
+1. Click the button above: the **Marketplace** of your Home Assistant opens on this integration.
+   Click **Install**, then **Restart Home Assistant**.
 2. The router is **discovered automatically**: Settings > Devices & services > **Configure**.
 3. That's all: **"Smart PV-Router" appears in the sidebar**, with the animated house.
 
@@ -162,16 +176,29 @@ If the router is not discovered:
 
 then enter `pvrouter.local` or the router's IP address.
 
-<details>
-<summary>Without the button: add it by hand in HACS</summary>
+**First install through the Marketplace**: Home Assistant first shows a warning about community content
+(to accept), then asks you to connect the Marketplace to a (free) GitHub account: enter the code shown
+on [github.com/login/device](https://github.com/login/device) and confirm. This connection is needed for
+any repository added from a link, as long as it is not in the Marketplace catalog; it gives no access to
+private repositories and no permission to make changes.
 
-HACS > **⋮** menu > **Custom repositories** > URL
-`https://github.com/smartelectromation/smart-pv-router-homeassistant`, category **Integration**, then
-**Download**.
+<details>
+<summary>Without the button: add it by hand in the Marketplace</summary>
+
+Settings > **Marketplace** > link icon (right of the search box): **Add from link** window > URL
+`https://github.com/smartelectromation/smart-pv-router-homeassistant` > **Add**, then **Install**.
 </details>
 
 <details>
-<summary>Without HACS: manual installation</summary>
+<summary>Home Assistant before 2026.11: HACS</summary>
+
+Before 2026.11 there is no Marketplace: the button above opens HACS. Click **Download**, then restart
+Home Assistant. Without the button: HACS > **⋮** menu > **Custom repositories** > repository URL,
+category **Integration**, then **Download**.
+</details>
+
+<details>
+<summary>Without Marketplace or HACS: manual installation</summary>
 
 1. Download `smart_pv_router.zip` from the [latest release](https://github.com/smartelectromation/smart-pv-router-homeassistant/releases/latest).
 2. Unzip it into `config/custom_components/smart_pv_router/` (with the Samba or Studio Code Server

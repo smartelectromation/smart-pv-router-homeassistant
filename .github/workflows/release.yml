@@ -1,7 +1,7 @@
 name: Release
 
 # À chaque version publiée (Releases > Publish), joint smart_pv_router.zip pour l'installation
-# manuelle sans HACS. HACS, lui, télécharge directement le dépôt.
+# manuelle. La Marketplace (Home Assistant 2026.11+) et HACS téléchargent directement le dépôt.
 on:
   release:
     types: [published]
