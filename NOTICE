@@ -7,6 +7,7 @@ La licence MIT (fichier LICENSE) s'applique au code source uniquement. Ne sont P
 couverts par cette licence et restent © Smart Electromation Technology, tous
 droits réservés :
 - les photos de la carte : custom_components/smart_pv_router/www/scene_*.jpg ;
+- les captures d'écran : docs/ ;
 - le logo et l'icône : custom_components/smart_pv_router/brand/ ;
 - les noms et marques « Smart PV-Router » et « Smart Electromation
   Technology ».
@@ -17,6 +18,7 @@ The MIT licence (LICENSE file) applies to the source code only. The following ar
 covered by this licence and remain © Smart Electromation Technology, all
 rights reserved:
 - the card pictures: custom_components/smart_pv_router/www/scene_*.jpg;
+- the screenshots: docs/;
 - the logo and icon: custom_components/smart_pv_router/brand/;
 - the names and trademarks "Smart PV-Router" and "Smart Electromation
   Technology".

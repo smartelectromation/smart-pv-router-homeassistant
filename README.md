@@ -14,6 +14,10 @@ pour le tableau de bord Énergie, modes des Sorties 1 et 2, Boost, et une carte 
 Comme elle passe par HTTP, le routeur garde sa liaison MQTT avec le serveur Smart Electromation : le
 tableau de bord en ligne (Grafana) et le suivi par smartelectromation.com restent disponibles.
 
+![Page « Smart PV-Router » dans Home Assistant : maison animée, flux d'énergie, modes des sorties, Boost et EcoMax](https://raw.githubusercontent.com/smartelectromation/smart-pv-router-homeassistant/main/docs/carte_maison_fr.jpg)
+
+*Page « Smart PV-Router » dans Home Assistant (exemple de valeurs).*
+
 ### Prérequis
 
 - Smart PV-Router avec le firmware **V12_36** ou plus récent.
@@ -156,6 +160,10 @@ energy for the Energy dashboard, Output 1 and Output 2 modes, Boost, and an anim
 Because it uses HTTP, the router keeps its MQTT link to the Smart Electromation server: the online
 dashboard (Grafana) and the follow-up by smartelectromation.com remain available.
 
+![The "Smart PV-Router" page in Home Assistant: animated house, energy flows, output modes, Boost and EcoMax](https://raw.githubusercontent.com/smartelectromation/smart-pv-router-homeassistant/main/docs/card_house_en.jpg)
+
+*The "Smart PV-Router" page in Home Assistant (example values).*
+
 ### Requirements
 
 - Smart PV-Router with firmware **V12_36** or later.
@@ -288,10 +296,10 @@ Download diagnostics).
 
 © 2026 Smart Electromation Technology.
 
-**Code** : licence [MIT](LICENSE). **Photos de la carte, logo, icône et marques** « Smart PV-Router »
+**Code** : licence [MIT](LICENSE). **Photos et captures de la carte, logo, icône et marques** « Smart PV-Router »
 et « Smart Electromation Technology » : © Smart Electromation Technology, tous droits réservés, hors
 licence MIT ; toute reproduction interdite sans autorisation écrite (voir [NOTICE](NOTICE)).
 
-**Code**: [MIT](LICENSE) licence. **Card pictures, logo, icon and the "Smart PV-Router" and "Smart
+**Code**: [MIT](LICENSE) licence. **Card pictures and screenshots, logo, icon and the "Smart PV-Router" and "Smart
 Electromation Technology" trademarks**: © Smart Electromation Technology, all rights reserved, not
 covered by the MIT licence; no reproduction without written permission (see [NOTICE](NOTICE)).
