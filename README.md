@@ -80,7 +80,7 @@ Les mises à jour ne sont alors pas proposées : il faut refaire la copie à cha
 | États | Sortie 1 / Sortie 2 active, charge saturée, période de nuit, cycle anti-bactéries |
 | Commandes | mode de la Sortie 1 et de la Sortie 2 (Arrêt, Automatique, Marche forcée, Gradation, Gradation manuelle), Boost, EcoMax |
 | Configuration | durée du Boost, écran, température de relance, plages horaires 1 et 2 (début, fin), puissance de délestage, Seuil Auto, Cible Modulation, relance réseau Sortie 2 |
-| Désactivées par défaut | signal WiFi, température RTC, MQTT connecté, redémarrage, calibration de la Sortie 2, gradation manuelle Sortie 1 / Sortie 2 |
+| Désactivées par défaut | signal WiFi, température RTC, MQTT connecté, redémarrage, calibration de la Sortie 2 |
 
 Seules les entités que le firmware fournit sont créées : certaines dépendent des options du routeur
 (production, batterie, borne VE, sonde de température, EcoMax, 2e plage horaire). La durée du Boost et
@@ -101,6 +101,10 @@ mettre aussi dans un de vos tableaux de bord : **Modifier** > **Ajouter une cart
   batterie et la borne VE ; pastilles avec la puissance de chacun.
 - Mode et état de chaque sortie (voyant Arrêt / Marche / Saturée), EcoMax, Boost et sa durée,
   directement sur la carte.
+- **Gradation manuelle** (mode 4 du routeur) : choisissez ce mode pour une sortie, un curseur de 0 à
+  100 % apparaît dessous. Cliquez sur la valeur pour en saisir une précise (ex. 54,7), puis Entrée. Le
+  bouton **Automatiser** importe un modèle d'automatisation : voir
+  [Piloter le routeur par une automatisation](#piloter-le-routeur-par-une-automatisation).
 - Boutons **Suivi graphique** (tableau de bord en ligne Smart Electromation Technology, adresse
   modifiable dans Configurer) et **Réglages**.
 - **Charge de la Sortie 2** au choix (radiateur, piscine, spa, voiture Green'Up, pompe à chaleur,
@@ -121,6 +125,37 @@ l'application et le tableau de bord en ligne).
 | Appareil individuel | Énergie routée |
 
 Les compteurs du routeur repartent de zéro chaque jour à 6 h : Home Assistant le gère.
+
+### Piloter le routeur par une automatisation
+
+Le routeur est ouvert : en **Gradation manuelle** (mode 4), ce n'est plus lui qui décide de la
+puissance envoyée à la sortie, c'est Home Assistant. Une automatisation peut alors régler la sortie de
+0 à 100 % (au dixième près) selon vos propres critères : surplus, tarif heures creuses ou Tempo, prix
+spot, prévisions solaires, batterie, présence...
+
+**Modèle fourni : annuler le surplus solaire avec une sortie**
+
+[![Importer le modèle](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fsmartelectromation%2Fsmart-pv-router-homeassistant%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fsmart_pv_router%2Fannuler_surplus_sortie.yaml)
+
+À chaque mesure du réseau (toutes les 5 secondes), l'automatisation monte la gradation de la sortie
+quand le surplus part au réseau et la baisse quand la maison soutire : c'est la régulation du routeur,
+refaite dans Home Assistant, que vous pouvez ensuite compléter.
+
+1. Cliquez sur le bouton ci-dessus (ou sur **Automatiser** sous la sortie, sur la carte), puis
+   **Importer le blueprint**.
+2. Créez l'automatisation à partir du modèle : choisissez « Puissance réseau », « Mode Sortie 1 » et
+   « Gradation manuelle Sortie 1 », et indiquez la puissance de la charge (ex. 2000 W pour le
+   chauffe-eau).
+3. Sur la carte, passez la sortie en **Gradation manuelle** : l'automatisation prend la main. Remettez
+   la sortie en **Automatique** pour rendre la main au routeur.
+
+**À savoir**
+
+- L'automatisation n'agit qu'en Gradation manuelle et ne change jamais le mode elle-même.
+- Le mode d'une sortie est enregistré dans la mémoire du routeur : changez-le de temps en temps, pas en
+  boucle. Pour une régulation fréquente, faites varier la gradation manuelle, prévue pour cela.
+- Pour écrire votre propre automatisation : action `number.set_value` sur l'entité « Gradation
+  manuelle Sortie 1 » (valeur de 0 à 100), la sortie étant en mode `manual_dimmer`.
 
 ### Bon à savoir
 
@@ -225,7 +260,7 @@ Updates are then not offered: copy it again for each release.
 | States | Output 1 / Output 2 active, load saturated, night period, anti-bacteria cycle |
 | Controls | Output 1 and Output 2 mode (Off, Automatic, Forced on, Dimmer, Manual dimmer), Boost, EcoMax |
 | Configuration | Boost duration, display, night heating temperature, time slots 1 and 2 (start, end), load shedding power, auto threshold, dimmer target, Output 2 night heating from grid |
-| Disabled by default | WiFi signal, RTC temperature, MQTT connected, restart, Output 2 calibration, manual dimmer Output 1 / Output 2 |
+| Disabled by default | WiFi signal, RTC temperature, MQTT connected, restart, Output 2 calibration |
 
 Only the entities provided by the firmware are created: some depend on the router's options
 (production, battery, EV charger, temperature probe, EcoMax, second time slot). Boost duration and
@@ -246,6 +281,10 @@ your dashboards: **Edit** > **Add card** > "Smart PV-Router".
   the battery and the EV charger; a chip with the power of each.
 - Mode and state of each output (Off / On / Saturated light), EcoMax, Boost and its duration,
   right on the card.
+- **Manual dimmer** (router mode 4): choose this mode for an output and a 0 to 100 % slider appears
+  below it. Click the value to type an exact one (e.g. 54.7), then Enter. The **Automate** button
+  imports an automation blueprint: see
+  [Control the router from an automation](#control-the-router-from-an-automation).
 - **Online charts** button (Smart Electromation Technology online dashboard, address editable in
   Configure) and **Settings** button.
 - **Output 2 load** of your choice (radiator, pool, hot tub, Green'Up car, heat pump, second water
@@ -266,6 +305,34 @@ the online dashboard).
 | Individual device | Diverted energy |
 
 The router's counters restart from zero every day at 6 am: Home Assistant handles it.
+
+### Control the router from an automation
+
+The router is open: in **Manual dimmer** (mode 4), the router no longer decides the power sent to the
+output, Home Assistant does. An automation can then set the output from 0 to 100 % (to a tenth) using
+your own criteria: surplus, off-peak tariff, spot price, solar forecast, battery, presence...
+
+**Supplied blueprint: cancel the solar surplus with an output**
+
+[![Import the blueprint](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fsmartelectromation%2Fsmart-pv-router-homeassistant%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fsmart_pv_router%2Fcancel_surplus_output.yaml)
+
+On each grid reading (every 5 seconds), the automation raises the output's dimmer when surplus is
+exported and lowers it when the house imports: the router's own regulation, rebuilt in Home Assistant,
+which you can then extend.
+
+1. Click the button above (or **Automate** below the output, on the card), then **Import blueprint**.
+2. Create the automation from the blueprint: choose "Grid power", "Output 1 mode" and "Manual dimmer
+   output 1", and enter the load power (e.g. 2000 W for the water heater).
+3. On the card, set the output to **Manual dimmer**: the automation takes over. Set the output back
+   to **Automatic** to hand control back to the router.
+
+**Good to know**
+
+- The automation only acts in Manual dimmer mode and never changes the mode itself.
+- An output's mode is stored in the router's memory: change it now and then, not in a loop. For
+  frequent regulation, vary the manual dimmer, which is meant for it.
+- To write your own automation: `number.set_value` action on the "Manual dimmer output 1" entity
+  (value 0 to 100), with the output in `manual_dimmer` mode.
 
 ### Good to know
 

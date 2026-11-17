@@ -1,0 +1,141 @@
+blueprint:
+  name: "Smart PV-Router : annuler le surplus solaire avec une sortie"
+  description: >-
+    Home Assistant règle lui-même la puissance d'une sortie du **Smart PV-Router by Smart
+    Electromation Technology** pour annuler le surplus solaire : à chaque nouvelle mesure du réseau
+    (toutes les 5 secondes), la gradation manuelle de la sortie monte quand le surplus part au réseau
+    et baisse quand la maison soutire.
+
+
+    **Mise en marche** : passez la sortie en **Gradation manuelle** (mode 4) sur la carte
+    « Smart PV-Router ». L'automatisation n'agit que dans ce mode ; pour l'arrêter, remettez la
+    sortie en Automatique. Elle ne change jamais le mode elle-même (le mode est enregistré dans la
+    mémoire du routeur).
+
+
+    C'est un point de départ : copiez ce modèle et ajoutez vos propres conditions (tarif, prix spot,
+    prévisions, batterie...).
+  domain: automation
+  author: Smart Electromation Technology
+  source_url: https://github.com/smartelectromation/smart-pv-router-homeassistant/blob/main/blueprints/automation/smart_pv_router/annuler_surplus_sortie.yaml
+  homeassistant:
+    min_version: "2026.3.0"
+  input:
+    entites:
+      name: Entités du routeur
+      icon: mdi:solar-power-variant
+      input:
+        capteur_reseau:
+          name: Puissance réseau
+          description: "Capteur « Puissance réseau » du routeur (+ soutirée / − injectée)."
+          selector:
+            entity:
+              filter:
+                - integration: smart_pv_router
+                  domain: sensor
+                  device_class: power
+        mode_sortie:
+          name: Mode de la sortie
+          description: "« Mode Sortie 1 » (ou « Mode Sortie 2 »)."
+          selector:
+            entity:
+              filter:
+                - integration: smart_pv_router
+                  domain: select
+        gradation:
+          name: Gradation manuelle de la sortie
+          description: "« Gradation manuelle Sortie 1 » (ou Sortie 2), de la même sortie que le mode."
+          selector:
+            entity:
+              filter:
+                - integration: smart_pv_router
+                  domain: number
+    reglages:
+      name: Réglages
+      icon: mdi:tune
+      input:
+        puissance_charge:
+          name: Puissance de la charge
+          description: Puissance de l'appareil branché sur la sortie, à 100 % (chauffe-eau, radiateur...).
+          default: 2000
+          selector:
+            number:
+              min: 100
+              max: 10000
+              step: 50
+              unit_of_measurement: W
+              mode: box
+        cible:
+          name: Puissance réseau visée
+          description: >-
+            0 : ni soutirage ni injection. Négatif : garder un peu d'injection (ex. −50 W).
+            Positif : accepter un peu de soutirage.
+          default: 0
+          selector:
+            number:
+              min: -1000
+              max: 1000
+              step: 10
+              unit_of_measurement: W
+              mode: box
+        reactivite:
+          name: Réactivité
+          description: >-
+            Part de l'écart corrigée à chaque mesure. 0,5 convient à la plupart des installations ;
+            baissez si la puissance oscille, montez si elle suit trop lentement.
+          default: 0.5
+          selector:
+            number:
+              min: 0.1
+              max: 1
+              step: 0.05
+              mode: slider
+        zone_morte:
+          name: Zone morte
+          description: Écart au-dessous duquel la consigne ne change pas.
+          default: 20
+          selector:
+            number:
+              min: 0
+              max: 300
+              step: 5
+              unit_of_measurement: W
+              mode: box
+
+mode: single
+max_exceeded: silent
+
+variables:
+  capteur_reseau: !input capteur_reseau
+  gradation: !input gradation
+  puissance_charge: !input puissance_charge
+  cible: !input cible
+  reactivite: !input reactivite
+  zone_morte: !input zone_morte
+
+triggers:
+  - trigger: state
+    entity_id: !input capteur_reseau
+
+conditions:
+  - condition: state
+    entity_id: !input mode_sortie
+    state: manual_dimmer
+  - condition: template
+    value_template: >-
+      {{ is_number(states(capteur_reseau)) and has_value(gradation) }}
+
+actions:
+  - variables:
+      reseau: "{{ states(capteur_reseau) | float }}"
+      actuel: "{{ states(gradation) | float(0) }}"
+      ecart: "{{ cible - reseau }}"
+      nouveau: >-
+        {{ [0, [100, actuel + reactivite * ecart / puissance_charge * 100] | min] | max | round(1) }}
+  - condition: template
+    value_template: "{{ ecart | abs > zone_morte and nouveau != actuel }}"
+  - action: number.set_value
+    target:
+      entity_id: !input gradation
+    data:
+      value: "{{ nouveau }}"

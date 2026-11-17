@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 from homeassistant.components.number import (
     NumberDeviceClass,
@@ -19,8 +20,9 @@ from homeassistant.const import (
     UnitOfTemperature,
     UnitOfTime,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .api import SmartPVRouterError
@@ -112,8 +114,9 @@ SETTINGS: tuple[SmartPVRouterNumberDescription, ...] = (
 
 # Gradation manuelle (mode 4) : POST /rest/api {"DIMMERn": 0..100}. Les firmwares avec la clé
 # « API » renvoient la consigne dans /getjson ; les plus anciens non, et l'entité affiche
-# alors la dernière valeur envoyée. Désactivées par défaut, utiles par exemple à Solar
-# Optimizer.
+# alors la dernière valeur envoyée. Activées par défaut quand le firmware annonce l'option
+# (la carte en fait un curseur sous la sortie en mode 4) ; désactivées avec un firmware plus
+# ancien, qui ne dit pas si l'option existe. Utiles aussi à Solar Optimizer.
 DIMMERS: tuple[NumberEntityDescription, ...] = tuple(
     NumberEntityDescription(
         key=key,
@@ -121,9 +124,8 @@ DIMMERS: tuple[NumberEntityDescription, ...] = tuple(
         native_unit_of_measurement=PERCENTAGE,
         native_min_value=0,
         native_max_value=100,
-        native_step=1,
+        native_step=0.1,  # le firmware accepte une consigne décimale (ex. 54,7 %)
         mode=NumberMode.SLIDER,
-        entity_registry_enabled_default=False,
     )
     for key, translation_key in (
         ("DIMMER1", "manual_dimmer_1"),
@@ -143,6 +145,8 @@ async def async_setup_entry(
     l'option existe ; un firmware plus ancien ne dit rien, on crée donc les deux.
     """
     coordinator = entry.runtime_data
+    if coordinator.api_version > 0:
+        _enable_dimmers(hass, entry, coordinator.data)
     entities: list[NumberEntity] = [
         SmartPVRouterSetting(coordinator, description)
         for description in SETTINGS
@@ -154,6 +158,27 @@ async def async_setup_entry(
         if coordinator.api_version == 0 or description.key in coordinator.data
     )
     async_add_entities(entities)
+
+
+@callback
+def _enable_dimmers(
+    hass: HomeAssistant, entry: SmartPVRouterConfigEntry, data: dict[str, Any]
+) -> None:
+    """Réactiver les gradations manuelles désactivées par une version précédente (≤ 0.3.0).
+
+    Seules celles que l'intégration avait désactivées d'office : une entité désactivée par
+    l'utilisateur le reste.
+    """
+    registry = er.async_get(hass)
+    for description in DIMMERS:
+        if description.key not in data:
+            continue
+        entity_id = registry.async_get_entity_id(
+            "number", DOMAIN, f"{entry.entry_id}_{description.key}"
+        )
+        reg = registry.async_get(entity_id) if entity_id else None
+        if reg and reg.disabled_by is er.RegistryEntryDisabler.INTEGRATION:
+            registry.async_update_entity(reg.entity_id, disabled_by=None)
 
 
 class SmartPVRouterSetting(SmartPVRouterEntity, NumberEntity):
@@ -190,6 +215,7 @@ class SmartPVRouterDimmerNumber(SmartPVRouterEntity, RestoreNumber):
         """Créer le réglage."""
         super().__init__(coordinator, description.key)
         self.entity_description = description
+        self._attr_entity_registry_enabled_default = coordinator.api_version > 0
         self._last_value: float | None = None
 
     async def async_added_to_hass(self) -> None:

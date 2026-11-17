@@ -10,7 +10,7 @@
  * elle n'adresse jamais le routeur directement.
  */
 
-const CARD_VERSION = "0.3.0";
+const CARD_VERSION = "0.3.1";
 const CARD_BASE = "/smart_pv_router_card";
 const DOMAIN = "smart_pv_router";
 const ACTIVE_W = 30; // En dessous, pas de flux affiché (comme l'application).
@@ -54,6 +54,10 @@ const TEXT = {
       air_conditioner: "Climatisation", socket: "Prise" },
     boost: "Boost", boost_rem: "Boost · {n} min", boost_on: "Boost en cours", boost_off: "Boost",
     duration: "Durée", min: "min", start: "Lancer", stop: "Arrêter", ecomax: "EcoMax",
+    dimmer: "Puissance", dimmer_hint: "Gradation manuelle : puissance envoyée à la sortie",
+    dimmer_edit: "Cliquer pour saisir une valeur précise (ex. 54,7), puis Entrée",
+    automate: "Automatiser",
+    automate_hint: "Laisser Home Assistant régler cette sortie pour annuler le surplus solaire (modèle d'automatisation à importer)",
     night: "Nuit", not_found: "Aucun Smart PV-Router trouvé.", today: "Aujourd'hui",
     s_prod: "Production", s_autoc: "Autoconsommation", s_suffi: "Autoproduction",
     s_import: "Soutirée", s_export: "Injectée", s_routed: "Routée", s_eff: "Rendement du routage",
@@ -73,6 +77,10 @@ const TEXT = {
       air_conditioner: "Air conditioning", socket: "Socket" },
     boost: "Boost", boost_rem: "Boost · {n} min", boost_on: "Boost running", boost_off: "Boost",
     duration: "Duration", min: "min", start: "Start", stop: "Stop", ecomax: "EcoMax",
+    dimmer: "Power", dimmer_hint: "Manual dimmer: power sent to the output",
+    dimmer_edit: "Click to type an exact value (e.g. 54.7), then Enter",
+    automate: "Automate",
+    automate_hint: "Let Home Assistant set this output to cancel the solar surplus (blueprint to import)",
     night: "Night", not_found: "No Smart PV-Router found.", today: "Today",
     s_prod: "Production", s_autoc: "Self-consumption", s_suffi: "Self-sufficiency",
     s_import: "Imported", s_export: "Exported", s_routed: "Diverted", s_eff: "Diversion efficiency",
@@ -92,6 +100,10 @@ const TEXT = {
       air_conditioner: "Klimaanlage", socket: "Steckdose" },
     boost: "Boost", boost_rem: "Boost · {n} min", boost_on: "Boost läuft", boost_off: "Boost",
     duration: "Dauer", min: "min", start: "Starten", stop: "Stoppen", ecomax: "EcoMax",
+    dimmer: "Leistung", dimmer_hint: "Manuelle Dimmung: Leistung am Ausgang",
+    dimmer_edit: "Klicken, um einen genauen Wert einzugeben (z. B. 54,7), dann Enter",
+    automate: "Automatisieren",
+    automate_hint: "Home Assistant regelt diesen Ausgang, um den Solarüberschuss auszugleichen (Blueprint importieren)",
     night: "Nacht", not_found: "Kein Smart PV-Router gefunden.", today: "Heute",
     s_prod: "Erzeugung", s_autoc: "Eigenverbrauch", s_suffi: "Autarkie",
     s_import: "Bezogen", s_export: "Eingespeist", s_routed: "Umgeleitet", s_eff: "Wirkungsgrad",
@@ -109,8 +121,21 @@ const KEYS = [
   "PIN", "PROD", "POUT", "POUT1", "POUT2", "HOUSE", "BATT", "EVPOWER", "LOAD2", "TEMP1",
   "BOOSTREM", "GRID_ERR", "STATUS_OUT1", "STATUS_OUT2", "LOAD1_SATURED", "LOAD2_SATURED", "NIGHT", "Out1_mode", "Out2_mode",
   "BOOST", "ECOMAX", "BOOSTTIME", "TOT_PROD", "TOT_S", "INJECT", "TOTAL_POWER", "AUTO_C", "SUFFI",
-  "EFF", "TIME", "CAR_MODE",
+  "EFF", "TIME", "CAR_MODE", "DIMMER1", "DIMMER2",
 ];
+
+// Mode « Gradation manuelle » (mode 4 du routeur) : la carte affiche alors un curseur 0-100 %.
+const MANUAL_DIMMER = "manual_dimmer";
+
+// Modèle d'automatisation (blueprint) qui annule le surplus en faisant varier la gradation manuelle.
+// Le lien « Automatiser » de la carte ouvre son import dans Home Assistant.
+const BLUEPRINT_BASE = "https://github.com/smartelectromation/smart-pv-router-homeassistant/blob/main/blueprints/automation/smart_pv_router/";
+const BLUEPRINTS = { fr: "annuler_surplus_sortie.yaml", en: "cancel_surplus_output.yaml" };
+
+// Pourcentage au dixième, sans zéro inutile : 54.7 → "54.7", 45 → "45".
+function pct1(v) {
+  return String(Math.round(parseFloat(v) * 10) / 10);
+}
 
 // Bilan du jour (compteurs du routeur, remis à zéro à 6 h) : clé, texte, icône, couleur, unité.
 const STATS = [
@@ -211,7 +236,31 @@ const STYLE = `
   .controls[hidden] { display: none; }
   .ctl { display: flex; align-items: center; gap: 6px; font-size: .9em; }
   .ctl[hidden] { display: none; }
-  .ctl { position: relative; }
+  .ctl { position: relative; flex-wrap: wrap; }
+  .dim { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; flex-basis: 100%; font-weight: 600;
+    color: var(--primary-text-color); }
+  .dim[hidden] { display: none; }
+  .dim .range { flex: 1; min-width: 120px; max-width: 280px; margin: 0; cursor: pointer; }
+  #d-out1 .range { accent-color: ${COLORS.ecs}; }
+  #d-out2 .range { accent-color: ${COLORS.out2}; }
+  /* Valeur affichée comme un simple texte « 45 % » ; un clic la rend modifiable (saisie au dixième). */
+  .pctbox { display: inline-flex; align-items: center; gap: 2px; }
+  .dim .pct { width: 3.6em; font: inherit; font-weight: 600; padding: 2px 4px; margin: 0;
+    text-align: right; font-variant-numeric: tabular-nums; border-radius: 6px; cursor: text;
+    border: 1px solid transparent; background: none; color: var(--primary-text-color);
+    -moz-appearance: textfield; appearance: textfield; }
+  .dim .pct::-webkit-outer-spin-button, .dim .pct::-webkit-inner-spin-button {
+    -webkit-appearance: none; margin: 0; }
+  .dim .pct:hover { border-color: var(--divider-color); }
+  .dim .pct:focus { outline: none; background: var(--card-background-color, #fff); }
+  .dim .auto { display: inline-flex; align-items: center; gap: 4px; font-size: .85em; font-weight: 600;
+    padding: 3px 10px 3px 7px; border-radius: 999px; text-decoration: none; cursor: pointer;
+    white-space: nowrap; color: ${COLORS.grid}; border: 1px solid ${COLORS.grid}66; }
+  .dim .auto[hidden] { display: none; }
+  .dim .auto:hover { background: ${COLORS.grid}14; }
+  .dim .auto ha-icon { --mdc-icon-size: 16px; }
+  #d-out1 .pct:focus { border-color: ${COLORS.ecs}; }
+  #d-out2 .pct:focus { border-color: ${COLORS.out2}; }
   .led { display: inline-flex; align-items: center; gap: 5px; font-size: .85em; font-weight: 600;
     color: var(--secondary-text-color); white-space: nowrap; cursor: pointer; }
   .led[hidden] { display: none; }
@@ -478,6 +527,11 @@ class SmartPVRouterCard extends HTMLElement {
     const chip = (name, node = false) =>
       `<div class="chip${node ? " node" : ""}" id="c-${name}" hidden>
         <ha-icon></ha-icon><span class="txt"><span class="cap"></span><span class="val"></span></span></div>`;
+    const dimmer = (n) => `<span class="dim" id="d-out${n}" hidden><span class="dim-lab"></span>
+      <input class="range" type="range" min="0" max="100" step="0.1">
+      <span class="pctbox"><input class="pct" type="number" min="0" max="100" step="0.1"
+        inputmode="decimal"><span>%</span></span>
+      <a class="auto" hidden><ha-icon icon="mdi:robot-outline"></ha-icon><span></span></a></span>`;
     root.innerHTML = `
       <style>${STYLE}</style>
       <ha-card>
@@ -509,10 +563,12 @@ class SmartPVRouterCard extends HTMLElement {
         <div class="controls">
           <span class="ctl" id="k-out1"><button class="lab-chip ecs" id="l-out1">
             <ha-icon icon="mdi:water-boiler"></ha-icon><span></span></button><select id="m-out1"></select>
-            <span class="led" id="led-out1" hidden><i></i><span></span></span></span>
+            <span class="led" id="led-out1" hidden><i></i><span></span></span>
+            ${dimmer("1")}</span>
           <span class="ctl" id="k-out2"><button class="lab-chip out2" id="l-out2">
             <ha-icon></ha-icon><span></span><span class="caret" hidden>▾</span></button><select id="m-out2"></select>
             <span class="led" id="led-out2" hidden><i></i><span></span></span>
+            ${dimmer("2")}
             <div class="picker" id="picker" hidden></div></span>
         </div>
         <div class="actions">
@@ -633,6 +689,58 @@ class SmartPVRouterCard extends HTMLElement {
       $(`#m-out${n}`).addEventListener("change", (ev) => {
         const id = this._id(key);
         if (id) this._call("select", "select_option", { entity_id: id, option: ev.target.value });
+      });
+    }
+    // Gradation manuelle : curseur (consigne envoyée au relâchement) ou valeur précise au dixième
+    // tapée dans la case (envoyée par Entrée ou en quittant la case ; Échap annule).
+    for (const [n, key] of [["1", "DIMMER1"], ["2", "DIMMER2"]]) {
+      const box = $(`#d-out${n}`);
+      const range = box.querySelector(".range");
+      const num = box.querySelector(".pct");
+      const out = n === "1" ? t.output_1 : t.output_2;
+      box.querySelector(".dim-lab").textContent = t.dimmer;
+      box.title = t.dimmer_hint;
+      range.setAttribute("aria-label", `${t.dimmer} (${out})`);
+      num.setAttribute("aria-label", `${t.dimmer} (${out}), %`);
+      num.title = t.dimmer_edit;
+      const send = (value) => {
+        delete box.dataset.busy;
+        const id = this._id(key);
+        if (id) this._call("number", "set_value", { entity_id: id, value });
+      };
+      range.addEventListener("input", () => {
+        box.dataset.busy = "1";
+        num.value = pct1(range.value);
+      });
+      range.addEventListener("change", () => send(parseFloat(pct1(range.value))));
+      num.addEventListener("focus", () => { box.dataset.busy = "1"; num.select(); });
+      num.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter") num.blur();
+        else if (ev.key === "Escape") {
+          num.value = num.dataset.sent || "";
+          delete box.dataset.busy;
+          num.blur();
+        }
+      });
+      num.addEventListener("change", () => {
+        const v = parseFloat(String(num.value).replace(",", "."));
+        if (!Number.isFinite(v)) { num.value = num.dataset.sent || ""; return; }
+        const value = parseFloat(pct1(Math.min(100, Math.max(0, v))));
+        num.value = range.value = value;
+        send(value);
+      });
+      num.addEventListener("blur", () => delete box.dataset.busy);
+      // « Automatiser » (administrateurs) : import du modèle qui annule le surplus avec cette sortie.
+      const auto = box.querySelector(".auto");
+      auto.hidden = !(this._hass.user && this._hass.user.is_admin);
+      auto.querySelector("span").textContent = t.automate;
+      auto.title = t.automate_hint;
+      const bp = BLUEPRINT_BASE + (BLUEPRINTS[language(this._hass)] || BLUEPRINTS.en);
+      auto.href = `/_my_redirect/blueprint_import?blueprint_url=${encodeURIComponent(bp)}`;
+      auto.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        history.pushState(null, "", auto.getAttribute("href"));
+        window.dispatchEvent(new CustomEvent("location-changed", { detail: { replace: false } }));
       });
     }
     $("#bo-dur").addEventListener("change", (ev) => {
@@ -760,6 +868,8 @@ class SmartPVRouterCard extends HTMLElement {
     // Modes des sorties, EcoMax, nuit, alarme
     this._updateMode("#m-out1", "#k-out1", "Out1_mode");
     this._updateMode("#m-out2", "#k-out2", "Out2_mode");
+    this._updateDimmer("1", "Out1_mode", "DIMMER1");
+    this._updateDimmer("2", "Out2_mode", "DIMMER2");
     for (const [n, statusKey, satKey] of [["1", "STATUS_OUT1", "LOAD1_SATURED"], ["2", "STATUS_OUT2", "LOAD2_SATURED"]]) {
       const led = $(`#led-out${n}`);
       led.hidden = !this._id(statusKey) && !this._id(satKey);
@@ -887,6 +997,19 @@ class SmartPVRouterCard extends HTMLElement {
       select.dataset.options = signature;
     }
     if (root.activeElement !== select) select.value = s.state;
+  }
+
+  // Curseur 0-100 % sous la sortie, seulement en Gradation manuelle (mode 4).
+  _updateDimmer(n, modeKey, key) {
+    const box = this._root().querySelector(`#d-out${n}`);
+    const mode = this._state(modeKey);
+    const s = this._state(key);
+    box.hidden = !s || !mode || mode.state !== MANUAL_DIMMER;
+    if (box.hidden || box.dataset.busy) return;
+    const v = parseFloat(s.state);
+    const num = box.querySelector(".pct");
+    box.querySelector(".range").value = Number.isFinite(v) ? v : 0;
+    num.value = num.dataset.sent = Number.isFinite(v) ? pct1(v) : "";
   }
 
   _format(stateObj, value) {

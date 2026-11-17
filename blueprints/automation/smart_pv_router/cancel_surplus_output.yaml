@@ -1,0 +1,139 @@
+blueprint:
+  name: "Smart PV-Router: cancel the solar surplus with an output"
+  description: >-
+    Home Assistant sets the power of an output of the **Smart PV-Router by Smart Electromation
+    Technology** itself to cancel the solar surplus: on each new grid reading (every 5 seconds), the
+    output's manual dimmer goes up when surplus is exported and down when the house imports.
+
+
+    **Switching on**: set the output to **Manual dimmer** (mode 4) on the "Smart PV-Router" card. The
+    automation only acts in this mode; to stop it, set the output back to Automatic. It never changes
+    the mode itself (the mode is stored in the router's memory).
+
+
+    This is a starting point: copy this blueprint and add your own conditions (tariff, spot price,
+    forecast, battery...).
+  domain: automation
+  author: Smart Electromation Technology
+  source_url: https://github.com/smartelectromation/smart-pv-router-homeassistant/blob/main/blueprints/automation/smart_pv_router/cancel_surplus_output.yaml
+  homeassistant:
+    min_version: "2026.3.0"
+  input:
+    entities:
+      name: Router entities
+      icon: mdi:solar-power-variant
+      input:
+        grid_sensor:
+          name: Grid power
+          description: 'The router''s "Grid power" sensor (+ import / − export).'
+          selector:
+            entity:
+              filter:
+                - integration: smart_pv_router
+                  domain: sensor
+                  device_class: power
+        output_mode:
+          name: Output mode
+          description: '"Output 1 mode" (or "Output 2 mode").'
+          selector:
+            entity:
+              filter:
+                - integration: smart_pv_router
+                  domain: select
+        dimmer:
+          name: Output manual dimmer
+          description: '"Manual dimmer output 1" (or output 2), for the same output as the mode.'
+          selector:
+            entity:
+              filter:
+                - integration: smart_pv_router
+                  domain: number
+    settings:
+      name: Settings
+      icon: mdi:tune
+      input:
+        load_power:
+          name: Load power
+          description: Power of the appliance on the output at 100 % (water heater, radiator...).
+          default: 2000
+          selector:
+            number:
+              min: 100
+              max: 10000
+              step: 50
+              unit_of_measurement: W
+              mode: box
+        target:
+          name: Target grid power
+          description: >-
+            0: no import and no export. Negative: keep a little export (e.g. −50 W).
+            Positive: allow a little import.
+          default: 0
+          selector:
+            number:
+              min: -1000
+              max: 1000
+              step: 10
+              unit_of_measurement: W
+              mode: box
+        reactivity:
+          name: Reactivity
+          description: >-
+            Share of the gap corrected on each reading. 0.5 suits most installations; lower it if
+            the power oscillates, raise it if it follows too slowly.
+          default: 0.5
+          selector:
+            number:
+              min: 0.1
+              max: 1
+              step: 0.05
+              mode: slider
+        deadband:
+          name: Deadband
+          description: Gap below which the setpoint does not change.
+          default: 20
+          selector:
+            number:
+              min: 0
+              max: 300
+              step: 5
+              unit_of_measurement: W
+              mode: box
+
+mode: single
+max_exceeded: silent
+
+variables:
+  grid_sensor: !input grid_sensor
+  dimmer: !input dimmer
+  load_power: !input load_power
+  target: !input target
+  reactivity: !input reactivity
+  deadband: !input deadband
+
+triggers:
+  - trigger: state
+    entity_id: !input grid_sensor
+
+conditions:
+  - condition: state
+    entity_id: !input output_mode
+    state: manual_dimmer
+  - condition: template
+    value_template: >-
+      {{ is_number(states(grid_sensor)) and has_value(dimmer) }}
+
+actions:
+  - variables:
+      grid: "{{ states(grid_sensor) | float }}"
+      current: "{{ states(dimmer) | float(0) }}"
+      gap: "{{ target - grid }}"
+      new: >-
+        {{ [0, [100, current + reactivity * gap / load_power * 100] | min] | max | round(1) }}
+  - condition: template
+    value_template: "{{ gap | abs > deadband and new != current }}"
+  - action: number.set_value
+    target:
+      entity_id: !input dimmer
+    data:
+      value: "{{ new }}"
