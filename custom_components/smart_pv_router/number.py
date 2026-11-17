@@ -1,4 +1,4 @@
-"""Consigne de nuit, durée du Boost et gradation manuelle des sorties."""
+"""Consigne de nuit, durée du Boost et modulation manuelle des sorties."""
 
 from __future__ import annotations
 
@@ -112,7 +112,7 @@ SETTINGS: tuple[SmartPVRouterNumberDescription, ...] = (
     ),
 )
 
-# Gradation manuelle (mode 4) : POST /rest/api {"DIMMERn": 0..100}. Les firmwares avec la clé
+# Modulation manuelle (mode 4) : POST /rest/api {"DIMMERn": 0..100}. Les firmwares avec la clé
 # « API » renvoient la consigne dans /getjson ; les plus anciens non, et l'entité affiche
 # alors la dernière valeur envoyée. Activées par défaut quand le firmware annonce l'option
 # (la carte en fait un curseur sous la sortie en mode 4) ; désactivées avec un firmware plus
@@ -141,7 +141,7 @@ async def async_setup_entry(
 ) -> None:
     """Créer les réglages numériques.
 
-    Gradation manuelle : un firmware avec la clé « API » n'envoie DIMMER1 / DIMMER2 que si
+    Modulation manuelle : un firmware avec la clé « API » n'envoie DIMMER1 / DIMMER2 que si
     l'option existe ; un firmware plus ancien ne dit rien, on crée donc les deux.
     """
     coordinator = entry.runtime_data
@@ -164,7 +164,7 @@ async def async_setup_entry(
 def _enable_dimmers(
     hass: HomeAssistant, entry: SmartPVRouterConfigEntry, data: dict[str, Any]
 ) -> None:
-    """Réactiver les gradations manuelles désactivées par une version précédente (≤ 0.3.0).
+    """Réactiver les modulations manuelles désactivées par une version précédente (≤ 0.3.0).
 
     Seules celles que l'intégration avait désactivées d'office : une entité désactivée par
     l'utilisateur le reste.
@@ -209,7 +209,7 @@ class SmartPVRouterSetting(SmartPVRouterEntity, NumberEntity):
 
 
 class SmartPVRouterDimmerNumber(SmartPVRouterEntity, RestoreNumber):
-    """Gradation manuelle d'une sortie, en %."""
+    """Modulation manuelle d'une sortie, en %."""
 
     def __init__(self, coordinator, description: NumberEntityDescription) -> None:
         """Créer le réglage."""
@@ -231,7 +231,7 @@ class SmartPVRouterDimmerNumber(SmartPVRouterEntity, RestoreNumber):
         return value if value is not None else self._last_value
 
     async def async_set_native_value(self, value: float) -> None:
-        """Envoyer la consigne de gradation."""
+        """Envoyer la consigne de modulation."""
         try:
             await self.coordinator.api.async_rest({self.entity_description.key: value})
         except SmartPVRouterError as err:

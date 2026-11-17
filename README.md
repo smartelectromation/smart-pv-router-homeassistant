@@ -11,7 +11,7 @@ fabriqué en France par Smart Electromation Technology. Site officiel :
 Elle lit le routeur sur le réseau local, sans cloud et sans broker MQTT : mesures, énergies du jour
 pour le tableau de bord Énergie, modes des Sorties 1 et 2, Boost, et une carte animée de la maison.
 
-**Le routeur est ouvert** : en Gradation manuelle, c'est Home Assistant qui fixe la puissance de
+**Le routeur est ouvert** : en Modulation manuelle, c'est Home Assistant qui fixe la puissance de
 chaque sortie. Vous pouvez donc **écrire les automatisations que vous voulez** (prix spot, heures
 creuses, batterie, prévisions...). Un exemple est fourni pour démarrer :
 [Piloter le routeur par une automatisation](#piloter-le-routeur-par-une-automatisation).
@@ -83,7 +83,7 @@ Les mises à jour ne sont alors pas proposées : il faut refaire la copie à cha
 | Énergies du jour (kWh) | soutirée au réseau, injectée au réseau, solaire produite, routée, solaire routée |
 | Autres mesures | tension, courants, autoproduction et autoconsommation du jour, rendement du routage, température du chauffe-eau, Boost restant, état de la voiture, heure du routeur |
 | États | Sortie 1 / Sortie 2 active, charge saturée, période de nuit, cycle anti-bactéries |
-| Commandes | mode de la Sortie 1 et de la Sortie 2 (Arrêt, Automatique, Marche forcée, Gradation, Gradation manuelle), Boost, EcoMax |
+| Commandes | mode de la Sortie 1 et de la Sortie 2 (Arrêt, Automatique, Marche forcée, Modulation, Modulation manuelle), Boost, EcoMax |
 | Configuration | durée du Boost, écran, température de relance, plages horaires 1 et 2 (début, fin), puissance de délestage, Seuil Auto, Cible Modulation, relance réseau Sortie 2 |
 | Désactivées par défaut | signal WiFi, température RTC, MQTT connecté, redémarrage, calibration de la Sortie 2 |
 
@@ -106,7 +106,7 @@ mettre aussi dans un de vos tableaux de bord : **Modifier** > **Ajouter une cart
   batterie et la borne VE ; pastilles avec la puissance de chacun.
 - Mode et état de chaque sortie (voyant Arrêt / Marche / Saturée), EcoMax, Boost et sa durée,
   directement sur la carte.
-- **Gradation manuelle** (mode 4 du routeur) : choisissez ce mode pour une sortie, un curseur de 0 à
+- **Modulation manuelle** (mode 4 du routeur) : choisissez ce mode pour une sortie, un curseur de 0 à
   100 % apparaît dessous. Cliquez sur la valeur pour en saisir une précise (ex. 54,7), puis Entrée. Le
   bouton **Automatiser** importe un exemple d'automatisation, à adapter à vos besoins : voir
   [Piloter le routeur par une automatisation](#piloter-le-routeur-par-une-automatisation).
@@ -133,7 +133,7 @@ Les compteurs du routeur repartent de zéro chaque jour à 6 h : Home Assistant 
 
 ### Piloter le routeur par une automatisation
 
-Le routeur est ouvert. En **Gradation manuelle** (mode 4), ce n'est plus lui qui décide de la
+Le routeur est ouvert. En **Modulation manuelle** (mode 4), ce n'est plus lui qui décide de la
 puissance envoyée à la sortie : c'est Home Assistant, donc **vous**. Écrivez les automatisations que
 vous voulez, avec toutes les données de votre maison, par exemple :
 
@@ -142,8 +142,8 @@ vous voulez, avec toutes les données de votre maison, par exemple :
 - tenir compte des prévisions solaires, de la température, de la présence ;
 - répartir la puissance entre la Sortie 1 et la Sortie 2 selon vos priorités.
 
-**Le principe tient en une action** : `number.set_value` sur l'entité « Gradation manuelle Sortie 1 »
-(ou Sortie 2), avec une valeur de 0 à 100, au dixième près, la sortie étant en Gradation manuelle
+**Le principe tient en une action** : `number.set_value` sur l'entité « Modulation manuelle Sortie 1 »
+(ou Sortie 2), avec une valeur de 0 à 100, au dixième près, la sortie étant en Modulation manuelle
 (`manual_dimmer`).
 
 #### Un exemple pour démarrer : annuler le surplus solaire
@@ -151,7 +151,7 @@ vous voulez, avec toutes les données de votre maison, par exemple :
 [![Importer l'exemple](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fsmartelectromation%2Fsmart-pv-router-homeassistant%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fsmart_pv_router%2Fannuler_surplus_sortie.yaml)
 
 Pour montrer le principe, ce blueprint refait dans Home Assistant la régulation du routeur : à chaque
-mesure du réseau (toutes les 5 secondes), il monte la gradation de la sortie quand le surplus part au
+mesure du réseau (toutes les 5 secondes), il monte la modulation de la sortie quand le surplus part au
 réseau et la baisse quand la maison soutire.
 
 > **Ce n'est qu'un exemple.** Copiez-le, modifiez-le, ajoutez vos propres conditions, ou écrivez vos
@@ -160,16 +160,16 @@ réseau et la baisse quand la maison soutire.
 1. Cliquez sur le bouton ci-dessus (ou sur **Automatiser** sous la sortie, sur la carte), puis
    **Importer le blueprint**.
 2. Créez l'automatisation à partir du modèle : choisissez « Puissance réseau », « Mode Sortie 1 » et
-   « Gradation manuelle Sortie 1 », et indiquez la puissance de la charge (ex. 2000 W pour le
+   « Modulation manuelle Sortie 1 », et indiquez la puissance de la charge (ex. 2000 W pour le
    chauffe-eau).
-3. Sur la carte, passez la sortie en **Gradation manuelle** : l'automatisation prend la main. Remettez
+3. Sur la carte, passez la sortie en **Modulation manuelle** : l'automatisation prend la main. Remettez
    la sortie en **Automatique** pour rendre la main au routeur.
 
 #### À savoir
 
-- L'exemple n'agit qu'en Gradation manuelle et ne change jamais le mode lui-même.
+- L'exemple n'agit qu'en Modulation manuelle et ne change jamais le mode lui-même.
 - Le mode d'une sortie est enregistré dans la mémoire du routeur : changez-le de temps en temps, pas en
-  boucle. Pour une régulation fréquente, faites varier la gradation manuelle, prévue pour cela.
+  boucle. Pour une régulation fréquente, faites varier la modulation manuelle, prévue pour cela.
 
 ### Bon à savoir
 
@@ -182,14 +182,14 @@ réseau et la baisse quand la maison soutire.
   [PvRouter NRI](https://github.com/nri04/ha-pvrouter-nri), développée indépendamment et non éditée par
   Smart Electromation Technology. Installées ensemble, les deux intégrations font apparaître le routeur
   deux fois.
-- **Gradation manuelle** : le réglage n'agit qu'en mode Gradation manuelle. Avec un firmware plus ancien,
+- **Modulation manuelle** : le réglage n'agit qu'en mode Modulation manuelle. Avec un firmware plus ancien,
   qui ne renvoie pas cette valeur, Home Assistant affiche la dernière valeur envoyée.
 - **Redémarrage** : il remet à zéro une partie des compteurs du jour.
 - **Calibration de la Sortie 2** : elle coupe le routage, met la Sortie 2 en marche à pleine puissance
   le temps de la mesure, puis enregistre la puissance de la charge. À lancer seulement quand la charge
   peut consommer (chauffe-eau non coupé par son thermostat).
 - Compatible avec [Solar Optimizer](https://github.com/jmcollin78/solar_optimizer) : modes des sorties
-  et gradation manuelle.
+  et modulation manuelle.
 
 ### Support
 

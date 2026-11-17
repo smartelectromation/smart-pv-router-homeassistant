@@ -54,7 +54,7 @@ const TEXT = {
       air_conditioner: "Climatisation", socket: "Prise" },
     boost: "Boost", boost_rem: "Boost · {n} min", boost_on: "Boost en cours", boost_off: "Boost",
     duration: "Durée", min: "min", start: "Lancer", stop: "Arrêter", ecomax: "EcoMax",
-    dimmer: "Puissance", dimmer_hint: "Gradation manuelle : puissance envoyée à la sortie",
+    dimmer: "Puissance", dimmer_hint: "Modulation manuelle : puissance envoyée à la sortie",
     dimmer_edit: "Cliquer pour saisir une valeur précise (ex. 54,7), puis Entrée",
     automate: "Automatiser",
     automate_hint: "Piloter cette sortie par vos automatisations : importer un exemple (annuler le surplus solaire) à adapter à vos besoins",
@@ -124,10 +124,10 @@ const KEYS = [
   "EFF", "TIME", "CAR_MODE", "DIMMER1", "DIMMER2",
 ];
 
-// Mode « Gradation manuelle » (mode 4 du routeur) : la carte affiche alors un curseur 0-100 %.
+// Mode « Modulation manuelle » (mode 4 du routeur) : la carte affiche alors un curseur 0-100 %.
 const MANUAL_DIMMER = "manual_dimmer";
 
-// Modèle d'automatisation (blueprint) qui annule le surplus en faisant varier la gradation manuelle.
+// Modèle d'automatisation (blueprint) qui annule le surplus en faisant varier la modulation manuelle.
 // Le lien « Automatiser » de la carte ouvre son import dans Home Assistant.
 const BLUEPRINT_BASE = "https://github.com/smartelectromation/smart-pv-router-homeassistant/blob/main/blueprints/automation/smart_pv_router/";
 const BLUEPRINTS = { fr: "annuler_surplus_sortie.yaml", en: "cancel_surplus_output.yaml" };
@@ -691,7 +691,7 @@ class SmartPVRouterCard extends HTMLElement {
         if (id) this._call("select", "select_option", { entity_id: id, option: ev.target.value });
       });
     }
-    // Gradation manuelle : curseur (consigne envoyée au relâchement) ou valeur précise au dixième
+    // Modulation manuelle : curseur (consigne envoyée au relâchement) ou valeur précise au dixième
     // tapée dans la case (envoyée par Entrée ou en quittant la case ; Échap annule).
     for (const [n, key] of [["1", "DIMMER1"], ["2", "DIMMER2"]]) {
       const box = $(`#d-out${n}`);
@@ -999,7 +999,7 @@ class SmartPVRouterCard extends HTMLElement {
     if (root.activeElement !== select) select.value = s.state;
   }
 
-  // Curseur 0-100 % sous la sortie, seulement en Gradation manuelle (mode 4).
+  // Curseur 0-100 % sous la sortie, seulement en Modulation manuelle (mode 4).
   _updateDimmer(n, modeKey, key) {
     const box = this._root().querySelector(`#d-out${n}`);
     const mode = this._state(modeKey);

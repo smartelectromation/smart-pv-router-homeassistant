@@ -1,17 +1,17 @@
 blueprint:
   name: "Smart PV-Router (exemple) : annuler le surplus solaire avec une sortie"
   description: >-
-    **Exemple d'automatisation.** En Gradation manuelle, c'est Home Assistant qui fixe la puissance
+    **Exemple d'automatisation.** En Modulation manuelle, c'est Home Assistant qui fixe la puissance
     des sorties : vous pouvez écrire les automatisations que vous voulez. Celle-ci montre le principe.
 
 
     Home Assistant règle lui-même la puissance d'une sortie du **Smart PV-Router by Smart
     Electromation Technology** pour annuler le surplus solaire : à chaque nouvelle mesure du réseau
-    (toutes les 5 secondes), la gradation manuelle de la sortie monte quand le surplus part au réseau
+    (toutes les 5 secondes), la modulation manuelle de la sortie monte quand le surplus part au réseau
     et baisse quand la maison soutire.
 
 
-    **Mise en marche** : passez la sortie en **Gradation manuelle** (mode 4) sur la carte
+    **Mise en marche** : passez la sortie en **Modulation manuelle** (mode 4) sur la carte
     « Smart PV-Router ». L'automatisation n'agit que dans ce mode ; pour l'arrêter, remettez la
     sortie en Automatique. Elle ne change jamais le mode elle-même (le mode est enregistré dans la
     mémoire du routeur).
@@ -19,7 +19,7 @@ blueprint:
 
     **Ce n'est qu'un exemple** : copiez-le, modifiez-le, ajoutez vos propres conditions (tarif, prix
     spot, prévisions, batterie...), ou écrivez vos automatisations de zéro avec l'action
-    `number.set_value` sur « Gradation manuelle Sortie 1 » (0 à 100 %).
+    `number.set_value` sur « Modulation manuelle Sortie 1 » (0 à 100 %).
   domain: automation
   author: Smart Electromation Technology
   source_url: https://github.com/smartelectromation/smart-pv-router-homeassistant/blob/main/blueprints/automation/smart_pv_router/annuler_surplus_sortie.yaml
@@ -47,9 +47,9 @@ blueprint:
               filter:
                 - integration: smart_pv_router
                   domain: select
-        gradation:
-          name: Gradation manuelle de la sortie
-          description: "« Gradation manuelle Sortie 1 » (ou Sortie 2), de la même sortie que le mode."
+        modulation:
+          name: Modulation manuelle de la sortie
+          description: "« Modulation manuelle Sortie 1 » (ou Sortie 2), de la même sortie que le mode."
           selector:
             entity:
               filter:
@@ -112,7 +112,7 @@ max_exceeded: silent
 
 variables:
   capteur_reseau: !input capteur_reseau
-  gradation: !input gradation
+  modulation: !input modulation
   puissance_charge: !input puissance_charge
   cible: !input cible
   reactivite: !input reactivite
@@ -128,12 +128,12 @@ conditions:
     state: manual_dimmer
   - condition: template
     value_template: >-
-      {{ is_number(states(capteur_reseau)) and has_value(gradation) }}
+      {{ is_number(states(capteur_reseau)) and has_value(modulation) }}
 
 actions:
   - variables:
       reseau: "{{ states(capteur_reseau) | float }}"
-      actuel: "{{ states(gradation) | float(0) }}"
+      actuel: "{{ states(modulation) | float(0) }}"
       ecart: "{{ cible - reseau }}"
       nouveau: >-
         {{ [0, [100, actuel + reactivite * ecart / puissance_charge * 100] | min] | max | round(1) }}
@@ -141,6 +141,6 @@ actions:
     value_template: "{{ ecart | abs > zone_morte and nouveau != actuel }}"
   - action: number.set_value
     target:
-      entity_id: !input gradation
+      entity_id: !input modulation
     data:
       value: "{{ nouveau }}"

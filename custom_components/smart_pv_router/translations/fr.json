@@ -78,8 +78,8 @@
       "auto_threshold": { "name": "Seuil Auto" },
       "load_shedding_power": { "name": "Puissance de délestage" },
       "dimmer_target": { "name": "Cible Modulation" },
-      "manual_dimmer_1": { "name": "Gradation manuelle Sortie 1" },
-      "manual_dimmer_2": { "name": "Gradation manuelle Sortie 2" }
+      "manual_dimmer_1": { "name": "Modulation manuelle Sortie 1" },
+      "manual_dimmer_2": { "name": "Modulation manuelle Sortie 2" }
     },
     "select": {
       "output_1_mode": {
@@ -88,8 +88,8 @@
           "stop": "Arrêt",
           "auto": "Automatique",
           "forced": "Marche forcée",
-          "dimmer": "Gradation",
-          "manual_dimmer": "Gradation manuelle"
+          "dimmer": "Modulation",
+          "manual_dimmer": "Modulation manuelle"
         }
       },
       "output_2_mode": {
@@ -98,8 +98,8 @@
           "stop": "Arrêt",
           "auto": "Automatique",
           "forced": "Marche forcée",
-          "dimmer": "Gradation",
-          "manual_dimmer": "Gradation manuelle"
+          "dimmer": "Modulation",
+          "manual_dimmer": "Modulation manuelle"
         }
       }
     },
