@@ -11,6 +11,11 @@ fabriqué en France par Smart Electromation Technology. Site officiel :
 Elle lit le routeur sur le réseau local, sans cloud et sans broker MQTT : mesures, énergies du jour
 pour le tableau de bord Énergie, modes des Sorties 1 et 2, Boost, et une carte animée de la maison.
 
+**Le routeur est ouvert** : en Gradation manuelle, c'est Home Assistant qui fixe la puissance de
+chaque sortie. Vous pouvez donc **écrire les automatisations que vous voulez** (prix spot, heures
+creuses, batterie, prévisions...). Un exemple est fourni pour démarrer :
+[Piloter le routeur par une automatisation](#piloter-le-routeur-par-une-automatisation).
+
 Comme elle passe par HTTP, le routeur garde sa liaison MQTT avec le serveur Smart Electromation : le
 tableau de bord en ligne (Grafana) et le suivi par smartelectromation.com restent disponibles.
 
@@ -103,7 +108,7 @@ mettre aussi dans un de vos tableaux de bord : **Modifier** > **Ajouter une cart
   directement sur la carte.
 - **Gradation manuelle** (mode 4 du routeur) : choisissez ce mode pour une sortie, un curseur de 0 à
   100 % apparaît dessous. Cliquez sur la valeur pour en saisir une précise (ex. 54,7), puis Entrée. Le
-  bouton **Automatiser** importe un modèle d'automatisation : voir
+  bouton **Automatiser** importe un exemple d'automatisation, à adapter à vos besoins : voir
   [Piloter le routeur par une automatisation](#piloter-le-routeur-par-une-automatisation).
 - Boutons **Suivi graphique** (tableau de bord en ligne Smart Electromation Technology, adresse
   modifiable dans Configurer) et **Réglages**.
@@ -128,18 +133,29 @@ Les compteurs du routeur repartent de zéro chaque jour à 6 h : Home Assistant 
 
 ### Piloter le routeur par une automatisation
 
-Le routeur est ouvert : en **Gradation manuelle** (mode 4), ce n'est plus lui qui décide de la
-puissance envoyée à la sortie, c'est Home Assistant. Une automatisation peut alors régler la sortie de
-0 à 100 % (au dixième près) selon vos propres critères : surplus, tarif heures creuses ou Tempo, prix
-spot, prévisions solaires, batterie, présence...
+Le routeur est ouvert. En **Gradation manuelle** (mode 4), ce n'est plus lui qui décide de la
+puissance envoyée à la sortie : c'est Home Assistant, donc **vous**. Écrivez les automatisations que
+vous voulez, avec toutes les données de votre maison, par exemple :
 
-**Modèle fourni : annuler le surplus solaire avec une sortie**
+- chauffer l'eau quand le prix spot est bas ou négatif, ou pendant les heures creuses ;
+- garder le surplus pour la batterie, la voiture ou un autre appareil avant le chauffe-eau ;
+- tenir compte des prévisions solaires, de la température, de la présence ;
+- répartir la puissance entre la Sortie 1 et la Sortie 2 selon vos priorités.
 
-[![Importer le modèle](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fsmartelectromation%2Fsmart-pv-router-homeassistant%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fsmart_pv_router%2Fannuler_surplus_sortie.yaml)
+**Le principe tient en une action** : `number.set_value` sur l'entité « Gradation manuelle Sortie 1 »
+(ou Sortie 2), avec une valeur de 0 à 100, au dixième près, la sortie étant en Gradation manuelle
+(`manual_dimmer`).
 
-À chaque mesure du réseau (toutes les 5 secondes), l'automatisation monte la gradation de la sortie
-quand le surplus part au réseau et la baisse quand la maison soutire : c'est la régulation du routeur,
-refaite dans Home Assistant, que vous pouvez ensuite compléter.
+#### Un exemple pour démarrer : annuler le surplus solaire
+
+[![Importer l'exemple](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fsmartelectromation%2Fsmart-pv-router-homeassistant%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fsmart_pv_router%2Fannuler_surplus_sortie.yaml)
+
+Pour montrer le principe, ce blueprint refait dans Home Assistant la régulation du routeur : à chaque
+mesure du réseau (toutes les 5 secondes), il monte la gradation de la sortie quand le surplus part au
+réseau et la baisse quand la maison soutire.
+
+> **Ce n'est qu'un exemple.** Copiez-le, modifiez-le, ajoutez vos propres conditions, ou écrivez vos
+> automatisations de zéro : le routeur fera ce que vous lui demanderez.
 
 1. Cliquez sur le bouton ci-dessus (ou sur **Automatiser** sous la sortie, sur la carte), puis
    **Importer le blueprint**.
@@ -149,13 +165,11 @@ refaite dans Home Assistant, que vous pouvez ensuite compléter.
 3. Sur la carte, passez la sortie en **Gradation manuelle** : l'automatisation prend la main. Remettez
    la sortie en **Automatique** pour rendre la main au routeur.
 
-**À savoir**
+#### À savoir
 
-- L'automatisation n'agit qu'en Gradation manuelle et ne change jamais le mode elle-même.
+- L'exemple n'agit qu'en Gradation manuelle et ne change jamais le mode lui-même.
 - Le mode d'une sortie est enregistré dans la mémoire du routeur : changez-le de temps en temps, pas en
   boucle. Pour une régulation fréquente, faites varier la gradation manuelle, prévue pour cela.
-- Pour écrire votre propre automatisation : action `number.set_value` sur l'entité « Gradation
-  manuelle Sortie 1 » (valeur de 0 à 100), la sortie étant en mode `manual_dimmer`.
 
 ### Bon à savoir
 
@@ -191,6 +205,11 @@ and made in France by Smart Electromation Technology. Official website:
 
 It reads the router on your local network, with no cloud and no MQTT broker: measurements, daily
 energy for the Energy dashboard, Output 1 and Output 2 modes, Boost, and an animated house card.
+
+**The router is open**: in Manual dimmer mode, Home Assistant sets the power of each output. You can
+therefore **write any automation you want** (spot price, off-peak hours, battery, forecasts...). An
+example is supplied to get started:
+[Control the router from an automation](#control-the-router-from-an-automation).
 
 Because it uses HTTP, the router keeps its MQTT link to the Smart Electromation server: the online
 dashboard (Grafana) and the follow-up by smartelectromation.com remain available.
@@ -283,7 +302,7 @@ your dashboards: **Edit** > **Add card** > "Smart PV-Router".
   right on the card.
 - **Manual dimmer** (router mode 4): choose this mode for an output and a 0 to 100 % slider appears
   below it. Click the value to type an exact one (e.g. 54.7), then Enter. The **Automate** button
-  imports an automation blueprint: see
+  imports an example automation, to adapt to your needs: see
   [Control the router from an automation](#control-the-router-from-an-automation).
 - **Online charts** button (Smart Electromation Technology online dashboard, address editable in
   Configure) and **Settings** button.
@@ -308,17 +327,29 @@ The router's counters restart from zero every day at 6 am: Home Assistant handle
 
 ### Control the router from an automation
 
-The router is open: in **Manual dimmer** (mode 4), the router no longer decides the power sent to the
-output, Home Assistant does. An automation can then set the output from 0 to 100 % (to a tenth) using
-your own criteria: surplus, off-peak tariff, spot price, solar forecast, battery, presence...
+The router is open. In **Manual dimmer** mode (mode 4), the router no longer decides the power sent
+to the output: Home Assistant does, so **you** do. Write any automation you want, using all the data
+of your home, for example:
 
-**Supplied blueprint: cancel the solar surplus with an output**
+- heat water when the spot price is low or negative, or during off-peak hours;
+- keep the surplus for the battery, the car or another appliance before the water heater;
+- take solar forecasts, temperature or presence into account;
+- share power between Output 1 and Output 2 according to your priorities.
 
-[![Import the blueprint](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fsmartelectromation%2Fsmart-pv-router-homeassistant%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fsmart_pv_router%2Fcancel_surplus_output.yaml)
+**It all comes down to one action**: `number.set_value` on the "Manual dimmer output 1" (or output 2)
+entity, with a value from 0 to 100, to a tenth, the output being in Manual dimmer mode
+(`manual_dimmer`).
 
-On each grid reading (every 5 seconds), the automation raises the output's dimmer when surplus is
-exported and lowers it when the house imports: the router's own regulation, rebuilt in Home Assistant,
-which you can then extend.
+#### An example to get started: cancel the solar surplus
+
+[![Import the example](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fsmartelectromation%2Fsmart-pv-router-homeassistant%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fsmart_pv_router%2Fcancel_surplus_output.yaml)
+
+To show the principle, this blueprint rebuilds the router's own regulation in Home Assistant: on each
+grid reading (every 5 seconds), it raises the output's dimmer when surplus is exported and lowers it
+when the house imports.
+
+> **It is only an example.** Copy it, change it, add your own conditions, or write your automations
+> from scratch: the router will do what you ask.
 
 1. Click the button above (or **Automate** below the output, on the card), then **Import blueprint**.
 2. Create the automation from the blueprint: choose "Grid power", "Output 1 mode" and "Manual dimmer
@@ -326,13 +357,11 @@ which you can then extend.
 3. On the card, set the output to **Manual dimmer**: the automation takes over. Set the output back
    to **Automatic** to hand control back to the router.
 
-**Good to know**
+#### Good to know
 
-- The automation only acts in Manual dimmer mode and never changes the mode itself.
+- The example only acts in Manual dimmer mode and never changes the mode itself.
 - An output's mode is stored in the router's memory: change it now and then, not in a loop. For
   frequent regulation, vary the manual dimmer, which is meant for it.
-- To write your own automation: `number.set_value` action on the "Manual dimmer output 1" entity
-  (value 0 to 100), with the output in `manual_dimmer` mode.
 
 ### Good to know
 

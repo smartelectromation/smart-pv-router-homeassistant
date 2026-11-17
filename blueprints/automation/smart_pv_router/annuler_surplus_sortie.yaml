@@ -1,6 +1,10 @@
 blueprint:
-  name: "Smart PV-Router : annuler le surplus solaire avec une sortie"
+  name: "Smart PV-Router (exemple) : annuler le surplus solaire avec une sortie"
   description: >-
+    **Exemple d'automatisation.** En Gradation manuelle, c'est Home Assistant qui fixe la puissance
+    des sorties : vous pouvez écrire les automatisations que vous voulez. Celle-ci montre le principe.
+
+
     Home Assistant règle lui-même la puissance d'une sortie du **Smart PV-Router by Smart
     Electromation Technology** pour annuler le surplus solaire : à chaque nouvelle mesure du réseau
     (toutes les 5 secondes), la gradation manuelle de la sortie monte quand le surplus part au réseau
@@ -13,8 +17,9 @@ blueprint:
     mémoire du routeur).
 
 
-    C'est un point de départ : copiez ce modèle et ajoutez vos propres conditions (tarif, prix spot,
-    prévisions, batterie...).
+    **Ce n'est qu'un exemple** : copiez-le, modifiez-le, ajoutez vos propres conditions (tarif, prix
+    spot, prévisions, batterie...), ou écrivez vos automatisations de zéro avec l'action
+    `number.set_value` sur « Gradation manuelle Sortie 1 » (0 à 100 %).
   domain: automation
   author: Smart Electromation Technology
   source_url: https://github.com/smartelectromation/smart-pv-router-homeassistant/blob/main/blueprints/automation/smart_pv_router/annuler_surplus_sortie.yaml

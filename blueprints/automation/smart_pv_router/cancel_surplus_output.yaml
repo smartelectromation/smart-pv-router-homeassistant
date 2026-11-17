@@ -1,6 +1,10 @@
 blueprint:
-  name: "Smart PV-Router: cancel the solar surplus with an output"
+  name: "Smart PV-Router (example): cancel the solar surplus with an output"
   description: >-
+    **Example automation.** In Manual dimmer mode, Home Assistant sets the power of the outputs: you
+    can write any automation you want. This one shows the principle.
+
+
     Home Assistant sets the power of an output of the **Smart PV-Router by Smart Electromation
     Technology** itself to cancel the solar surplus: on each new grid reading (every 5 seconds), the
     output's manual dimmer goes up when surplus is exported and down when the house imports.
@@ -11,8 +15,9 @@ blueprint:
     the mode itself (the mode is stored in the router's memory).
 
 
-    This is a starting point: copy this blueprint and add your own conditions (tariff, spot price,
-    forecast, battery...).
+    **It is only an example**: copy it, change it, add your own conditions (tariff, spot price,
+    forecast, battery...), or write your automations from scratch with the `number.set_value` action
+    on "Manual dimmer output 1" (0 to 100 %).
   domain: automation
   author: Smart Electromation Technology
   source_url: https://github.com/smartelectromation/smart-pv-router-homeassistant/blob/main/blueprints/automation/smart_pv_router/cancel_surplus_output.yaml
