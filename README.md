@@ -146,6 +146,10 @@ vous voulez, avec toutes les données de votre maison, par exemple :
 (ou Sortie 2), avec une valeur de 0 à 100, au dixième près, la sortie étant en Modulation manuelle
 (`manual_dimmer`).
 
+**Guide complet : [Piloter le Smart PV-Router avec vos automatisations](docs/automatisations.md)**
+(rôle de chaque entité, création d'une automatisation sans code, exemples : prix négatif, heures
+creuses, batterie d'abord, deux sorties, précautions).
+
 #### Un exemple pour démarrer : annuler le surplus solaire
 
 [![Importer l'exemple](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fsmartelectromation%2Fsmart-pv-router-homeassistant%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fsmart_pv_router%2Fannuler_surplus_sortie.yaml)
@@ -339,6 +343,10 @@ of your home, for example:
 **It all comes down to one action**: `number.set_value` on the "Manual dimmer output 1" (or output 2)
 entity, with a value from 0 to 100, to a tenth, the output being in Manual dimmer mode
 (`manual_dimmer`).
+
+**Full guide: [Drive the Smart PV-Router with your own automations](docs/automations.md)** (role
+of each entity, building an automation without code, examples: negative price, off-peak hours,
+battery first, two outputs, precautions).
 
 #### An example to get started: cancel the solar surplus
 
