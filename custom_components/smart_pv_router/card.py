@@ -121,7 +121,16 @@ def websocket_routers(
     for entry in hass.config_entries.async_entries(DOMAIN):
         if entry.state is not ConfigEntryState.LOADED:
             continue
-        device = device_registry.async_get_device(identifiers={(DOMAIN, entry.entry_id)})
+        # L'appareil du routeur parmi ceux de cette entrée : recherche valable dans toutes les
+        # versions de Home Assistant (async_get_device est obsolète depuis la 2026.8).
+        device = next(
+            (
+                dev
+                for dev in dr.async_entries_for_config_entry(device_registry, entry.entry_id)
+                if (DOMAIN, entry.entry_id) in dev.identifiers
+            ),
+            None,
+        )
         prefix = f"{entry.entry_id}_"
         entities = {
             reg.unique_id.removeprefix(prefix): reg.entity_id

@@ -15,7 +15,6 @@ from homeassistant.components.number import (
 from homeassistant.const import (
     PERCENTAGE,
     EntityCategory,
-    UnitOfApparentPower,
     UnitOfPower,
     UnitOfTemperature,
     UnitOfTime,
@@ -82,14 +81,15 @@ SETTINGS: tuple[SmartPVRouterNumberDescription, ...] = (
         mode=NumberMode.BOX,
         entity_category=EntityCategory.CONFIG,
     ),
-    # Délestage, puissance MAX (VA) : entier > 0 ; plafond 12 000 ou 30 000 VA selon le firmware
-    # (au-delà, le routeur ramène au plafond).
+    # Délestage, puissance MAX (W) : le routeur la compare à la puissance active soutirée au
+    # réseau. Entier > 0 ; plafond 12 000 ou 30 000 selon le firmware (au-delà, le routeur ramène
+    # au plafond).
     SmartPVRouterNumberDescription(
         key="OVERLOAD",
         read_key="OVERLOAD",
         translation_key="load_shedding_power",
-        device_class=NumberDeviceClass.APPARENT_POWER,
-        native_unit_of_measurement=UnitOfApparentPower.VOLT_AMPERE,
+        device_class=NumberDeviceClass.POWER,
+        native_unit_of_measurement=UnitOfPower.WATT,
         native_min_value=1,
         native_max_value=30000,
         native_step=1,

@@ -10,7 +10,7 @@
  * elle n'adresse jamais le routeur directement.
  */
 
-const CARD_VERSION = "0.3.1";
+const CARD_VERSION = "0.4.0";
 const CARD_BASE = "/smart_pv_router_card";
 const DOMAIN = "smart_pv_router";
 const ACTIVE_W = 30; // En dessous, pas de flux affiché (comme l'application).
@@ -118,7 +118,7 @@ const DEFAULT_OUT2_ICON = "mdi:flash";
 
 // Clés de /getjson (ou de commande) dont la carte lit l'entité.
 const KEYS = [
-  "PIN", "PROD", "POUT", "POUT1", "POUT2", "HOUSE", "BATT", "EVPOWER", "LOAD2", "TEMP1",
+  "PIN", "PROD", "POUT", "POUT1", "POUT2", "HOUSE", "BATT", "HIBAT_SOC", "EVPOWER", "LOAD2", "TEMP1",
   "BOOSTREM", "GRID_ERR", "STATUS_OUT1", "STATUS_OUT2", "LOAD1_SATURED", "LOAD2_SATURED", "NIGHT", "Out1_mode", "Out2_mode",
   "BOOST", "ECOMAX", "BOOSTTIME", "TOT_PROD", "TOT_S", "INJECT", "TOTAL_POWER", "AUTO_C", "SUFFI",
   "EFF", "TIME", "CAR_MODE", "DIMMER1", "DIMMER2",
@@ -851,9 +851,14 @@ class SmartPVRouterCard extends HTMLElement {
     } else this._hide("out2");
 
     if (hasBatt) {
+      // Batterie externe : niveau de charge à côté du nom ; « — » quand elle ne répond plus au
+      // routeur (puissance inconnue), au lieu d'une fausse « Veille ».
       const icon = batt > ACTIVE_W ? "mdi:battery-charging" : "mdi:battery";
-      this._chip("batt", icon, COLORS.batt, t.battery,
-        Math.abs(batt) > ACTIVE_W ? power(Math.abs(batt)) : t.standby);
+      const level = this._num("HIBAT_SOC");
+      const battCap = level === null ? t.battery : `${t.battery} · ${nf0.format(level)} %`;
+      const battVal = this._num("BATT") === null ? "—"
+        : Math.abs(batt) > ACTIVE_W ? power(Math.abs(batt)) : t.standby;
+      this._chip("batt", icon, COLORS.batt, battCap, battVal);
     } else this._hide("batt");
     if (!hasEv) this._hide("ev");
     else if (charging && carHere) this._chip("ev", "mdi:car-electric", COLORS.ev, t.car, power(ev));

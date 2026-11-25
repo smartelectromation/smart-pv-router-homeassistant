@@ -18,7 +18,7 @@ DEFAULT_HOST = "pvrouter.local"
 # carte après une mise à jour.
 CARD_URL_BASE = "/smart_pv_router_card"
 CARD_FILE = "smart-pv-router-card.js"
-CARD_VERSION = "0.3.1"
+CARD_VERSION = "0.4.0"
 
 # Charge branchée sur la Sortie 2 (options de l'intégration, comme dans l'application mobile) :
 # type → icône. Le nom affiché est celui du type, sauf si l'utilisateur en saisit un.

@@ -59,6 +59,7 @@ routeur a l'option correspondante (production, batterie, borne, sonde de tempér
 | Puissance Sortie 1 / Sortie 2 | Puissance de chaque sortie. |
 | Consommation de la maison | Consommation hors chauffe-eau, Sortie 2 et borne. |
 | Puissance batterie | Positive quand la batterie se charge, négative quand elle se décharge. |
+| Niveau de la batterie | Niveau de charge en %, si le routeur lit la batterie ; « inconnu » quand elle ne lui répond plus. |
 | Température du chauffe-eau | Avec une sonde ; « inconnue » sans sonde. |
 
 **États**
@@ -217,9 +218,9 @@ actions:
 
 ### 6.4 La batterie d'abord
 
-Si votre batterie est suivie par Home Assistant, ne donnez le surplus au chauffe-eau qu'une fois
-qu'elle est presque pleine. Le plus simple : partir de l'exemple 6.1 (*Prendre le contrôle*) et
-ajouter une condition :
+Si le routeur lit votre batterie (entité « Niveau de la batterie ») ou si une autre intégration la
+suit, ne donnez le surplus au chauffe-eau qu'une fois qu'elle est presque pleine. Le plus simple :
+partir de l'exemple 6.1 (*Prendre le contrôle*) et ajouter une condition :
 
 ```yaml
 conditions:

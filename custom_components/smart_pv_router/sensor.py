@@ -63,17 +63,48 @@ def _split_outputs(data: dict[str, Any]) -> tuple[float, float]:
     return out1, out2
 
 
+def _has_battery(data: dict[str, Any]) -> bool:
+    """Le firmware annonce une batterie : mesurée par le routeur (BATT) ou externe (HIBAT_OK)."""
+    return "BATT" in data or "HIBAT_OK" in data
+
+
+def _battery_power(data: dict[str, Any]) -> float | None:
+    """Puissance de la batterie, > 0 en charge et < 0 en décharge (convention de BATT).
+
+    Batterie externe lue par le routeur (clés HIBAT_*) : HIBAT_P est NÉGATIVE en charge, donc
+    inversée ici, et ne vaut que si HIBAT_OK ; sinon la batterie ne répond plus au routeur et la
+    puissance est inconnue. Sans ces clés : BATT, batterie mesurée par le routeur.
+    """
+    if "HIBAT_OK" in data:
+        if not to_bool(data.get("HIBAT_OK")):
+            return None
+        power = to_float(data.get("HIBAT_P"))
+        return None if power is None else 0.0 - power  # 0.0 - x : jamais « -0 »
+    return to_float(data.get("BATT"))
+
+
+def _battery_level(data: dict[str, Any]) -> StateType:
+    """Niveau de charge de la batterie externe (HIBAT_SOC, %).
+
+    Le firmware envoie 0 quand la batterie ne répond plus : « inconnu » plutôt qu'un faux 0 %.
+    """
+    if not to_bool(data.get("HIBAT_OK")):
+        return None
+    level = to_float(data.get("HIBAT_SOC"))
+    return None if level is None else min(max(level, 0.0), 100.0)
+
+
 def _house_power(data: dict[str, Any]) -> StateType:
     """Maison hors chauffe-eau, Sortie 2 et borne VE (même calcul que l'application mobile).
 
-    Consommation = production + réseau (+ soutiré / − injecté) − charge de la batterie (BATT > 0),
-    ou réseau seul sans mesure de production.
+    Consommation = production + réseau (+ soutiré / − injecté) − charge de la batterie (> 0 en
+    charge, voir _battery_power), ou réseau seul sans mesure de production.
     """
     grid = to_float(data.get("PIN"))
     if grid is None:
         return None
     if "PROD" in data:
-        battery = to_float(data.get("BATT")) or 0.0
+        battery = _battery_power(data) or 0.0
         consumption = max((to_float(data.get("PROD")) or 0.0) + grid - battery, 0.0)
     else:
         consumption = max(grid, 0.0)
@@ -176,7 +207,9 @@ SENSORS: tuple[SmartPVRouterSensorDescription, ...] = (
     _power("INJECT_I", "grid_export_power"),
     _power("PROD", "solar_power"),
     _power("POUT", "diverted_power"),
-    _power("BATT", "battery_power"),
+    # Clé BATT gardée pour l'entité (identifiant, carte), que la batterie soit mesurée par le
+    # routeur (BATT) ou externe (HIBAT_P, signe inversé).
+    _power("BATT", "battery_power", value_fn=_battery_power, exists_fn=_has_battery),
     _power("EVPOWER", "ev_charger_power"),
     _power(
         "POUT1",
@@ -234,6 +267,17 @@ SENSORS: tuple[SmartPVRouterSensorDescription, ...] = (
     # Températures
     _temperature("TEMP1", "water_heater_temperature", value_fn=_water_heater_temperature),
     _temperature("TEMP2", "probe_2_temperature"),
+    # Niveau de charge de la batterie externe lue par le routeur
+    SmartPVRouterSensorDescription(
+        key="HIBAT_SOC",
+        translation_key="battery_level",
+        device_class=SensorDeviceClass.BATTERY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
+        value_fn=_battery_level,
+        exists_fn=lambda data: "HIBAT_OK" in data,
+    ),
     # Boost
     SmartPVRouterSensorDescription(
         key="BOOSTREM",

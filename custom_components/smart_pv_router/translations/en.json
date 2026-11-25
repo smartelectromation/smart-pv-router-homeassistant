@@ -67,6 +67,7 @@
       "output_2_saturated": { "name": "Output 2 load saturated" },
       "night_period": { "name": "Night period" },
       "anti_bacteria_cycle": { "name": "Anti-bacteria cycle" },
+      "battery_connected": { "name": "Battery connected" },
       "mqtt_connected": { "name": "MQTT connected" }
     },
     "button": {
@@ -109,6 +110,7 @@
       "solar_power": { "name": "Solar power" },
       "diverted_power": { "name": "Diverted power" },
       "battery_power": { "name": "Battery power" },
+      "battery_level": { "name": "Battery level" },
       "ev_charger_power": { "name": "EV charger power" },
       "house_power": { "name": "House consumption" },
       "output_1_power": { "name": "Output 1 power" },

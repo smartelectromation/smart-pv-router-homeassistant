@@ -57,6 +57,7 @@ option (production, battery, EV charger, temperature probe, EcoMax...).
 | Output 1 / Output 2 power | Power of each output. |
 | House consumption | Consumption excluding the water heater, Output 2 and the EV charger. |
 | Battery power | Positive when the battery charges, negative when it discharges. |
+| Battery level | State of charge in %, if the router reads the battery; "unknown" when it no longer answers. |
 | Water heater temperature | With a probe; "unknown" without one. |
 
 **States**
@@ -211,8 +212,9 @@ actions:
 
 ### 6.4 Battery first
 
-If your battery is tracked by Home Assistant, give the surplus to the water heater only once it is
-almost full. The simplest way: start from example 6.1 (*Take control*) and add a condition:
+If the router reads your battery ("Battery level" entity) or another integration tracks it, give the
+surplus to the water heater only once it is almost full. The simplest way: start from example 6.1
+(*Take control*) and add a condition:
 
 ```yaml
 conditions:

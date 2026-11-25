@@ -41,6 +41,14 @@ BINARY_SENSORS: tuple[BinarySensorEntityDescription, ...] = (
         key="BACT",
         translation_key="anti_bacteria_cycle",
     ),
+    # Batterie externe lue par le routeur : elle lui répond. Sinon, sa puissance et son niveau
+    # sont « inconnus ».
+    BinarySensorEntityDescription(
+        key="HIBAT_OK",
+        translation_key="battery_connected",
+        device_class=BinarySensorDeviceClass.CONNECTIVITY,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
     BinarySensorEntityDescription(
         key="MQTT",
         translation_key="mqtt_connected",

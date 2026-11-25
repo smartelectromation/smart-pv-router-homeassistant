@@ -81,8 +81,8 @@ Les mises à jour ne sont alors pas proposées : il faut refaire la copie à cha
 |---|---|
 | Puissances | réseau (+ soutirée / − injectée), injectée, production solaire, routée, Sortie 1, Sortie 2, maison, batterie, borne VE |
 | Énergies du jour (kWh) | soutirée au réseau, injectée au réseau, solaire produite, routée, solaire routée |
-| Autres mesures | tension, courants, autoproduction et autoconsommation du jour, rendement du routage, température du chauffe-eau, Boost restant, état de la voiture, heure du routeur |
-| États | Sortie 1 / Sortie 2 active, charge saturée, période de nuit, cycle anti-bactéries |
+| Autres mesures | tension, courants, autoproduction et autoconsommation du jour, rendement du routage, température du chauffe-eau, niveau de la batterie, Boost restant, état de la voiture, heure du routeur |
+| États | Sortie 1 / Sortie 2 active, charge saturée, période de nuit, cycle anti-bactéries, batterie connectée |
 | Commandes | mode de la Sortie 1 et de la Sortie 2 (Arrêt, Automatique, Marche forcée, Modulation, Modulation manuelle), Boost, EcoMax |
 | Configuration | durée du Boost, écran, température de relance, plages horaires 1 et 2 (début, fin), puissance de délestage, Seuil Auto, Cible Modulation, relance réseau Sortie 2 |
 | Désactivées par défaut | signal WiFi, température RTC, MQTT connecté, redémarrage, calibration de la Sortie 2 |
@@ -93,6 +93,11 @@ l'écran demandent un firmware qui annonce la version de son API (clé `API` de 
 horaires, le délestage, le Seuil Auto, la Cible Modulation et la relance réseau Sortie 2 demandent
 `API` 2 ou plus. Sans sonde, la température du chauffe-eau est « inconnue ».
 
+**Batterie.** Si le routeur lit une batterie externe, l'intégration affiche sa puissance (positive en
+charge, négative en décharge), son niveau de charge et son état de connexion, et la consommation de
+la maison en tient compte. Quand la batterie ne répond plus au routeur, sa puissance et son niveau
+sont « inconnus ».
+
 Les réglages sont dans la fiche de l'appareil, carte **Configuration** : bouton **Réglages** de la page
 Smart PV-Router (administrateurs), ou Paramètres > Appareils et services > Smart PV-Router.
 
@@ -101,7 +106,8 @@ Smart PV-Router (administrateurs), ou Paramètres > Appareils et services > Smar
 Elle s'affiche dans la barre latérale (**Smart PV-Router**) dès que le routeur est ajouté. Pour la
 mettre aussi dans un de vos tableaux de bord : **Modifier** > **Ajouter une carte** > « Smart PV-Router ».
 
-- Photo de la maison, avec la batterie et la voiture si le routeur les mesure.
+- Photo de la maison, avec la batterie (et son niveau de charge, si le routeur le lit) et la voiture
+  si le routeur les mesure.
 - Flux d'énergie animés entre le routeur et le solaire, le réseau, le chauffe-eau, la Sortie 2, la
   batterie et la borne VE ; pastilles avec la puissance de chacun.
 - Mode et état de chaque sortie (voyant Arrêt / Marche / Saturée), EcoMax, Boost et sa durée,
@@ -279,8 +285,8 @@ Updates are then not offered: copy it again for each release.
 |---|---|
 | Power | grid (+ import / − export), export, solar, diverted, Output 1, Output 2, house, battery, EV charger |
 | Daily energy (kWh) | grid import, grid export, solar, diverted, solar diverted |
-| Other measurements | voltage, currents, self-sufficiency and self-consumption today, diversion efficiency, water heater temperature, Boost remaining, car state, router time |
-| States | Output 1 / Output 2 active, load saturated, night period, anti-bacteria cycle |
+| Other measurements | voltage, currents, self-sufficiency and self-consumption today, diversion efficiency, water heater temperature, battery level, Boost remaining, car state, router time |
+| States | Output 1 / Output 2 active, load saturated, night period, anti-bacteria cycle, battery connected |
 | Controls | Output 1 and Output 2 mode (Off, Automatic, Forced on, Dimmer, Manual dimmer), Boost, EcoMax |
 | Configuration | Boost duration, display, night heating temperature, time slots 1 and 2 (start, end), load shedding power, auto threshold, dimmer target, Output 2 night heating from grid |
 | Disabled by default | WiFi signal, RTC temperature, MQTT connected, restart, Output 2 calibration |
@@ -291,6 +297,11 @@ display need a firmware that reports its API version (`API` key in `/getjson`); 
 shedding, auto threshold, dimmer target and Output 2 night heating need `API` 2 or later. Without a
 probe, the water heater temperature is "unknown".
 
+**Battery.** If the router reads an external battery, the integration shows its power (positive when
+charging, negative when discharging), its state of charge and its connection state, and the house
+consumption takes it into account. When the battery no longer answers the router, its power and
+level are "unknown".
+
 Settings are on the device page, **Configuration** card: **Settings** button on the Smart PV-Router
 page (administrators), or Settings > Devices & services > Smart PV-Router.
 
@@ -299,7 +310,8 @@ page (administrators), or Settings > Devices & services > Smart PV-Router.
 It shows in the sidebar (**Smart PV-Router**) as soon as the router is added. To also put it on one of
 your dashboards: **Edit** > **Add card** > "Smart PV-Router".
 
-- Picture of the house, with the battery and the car if the router measures them.
+- Picture of the house, with the battery (and its state of charge, if the router reads it) and the
+  car if the router measures them.
 - Animated energy flows between the router and the solar panels, the grid, the water heater, Output 2,
   the battery and the EV charger; a chip with the power of each.
 - Mode and state of each output (Off / On / Saturated light), EcoMax, Boost and its duration,
